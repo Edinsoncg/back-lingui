@@ -10,6 +10,7 @@ export default class RoleDashboardComponent extends BaseModel {
 
   @column()
   declare dashboard_component_id: number
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
