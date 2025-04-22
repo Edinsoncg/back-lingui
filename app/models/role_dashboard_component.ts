@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 
-export default class RoleDasboardComponent extends BaseModel {
+export default class RoleDashboardComponent extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
@@ -10,7 +10,6 @@ export default class RoleDasboardComponent extends BaseModel {
 
   @column()
   declare dashboard_component_id: number
-
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
