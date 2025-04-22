@@ -58,8 +58,8 @@ export default class extends BaseSchema {
       table.datetime('start_at').notNullable()
       table.datetime('end_at').notNullable()
       table.integer('duration').notNullable().unsigned()
-      table.timestamp('created_at')
-      table.timestamp('updated_at')
+      table.timestamp('created_at').notNullable()
+      table.timestamp('updated_at').nullable()
     })
   }
 

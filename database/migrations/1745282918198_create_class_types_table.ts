@@ -7,8 +7,8 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.bigIncrements('id')
       table.string('type').notNullable().unique()
-      table.timestamp('created_at')
-      table.timestamp('updated_at')
+      table.timestamp('created_at').notNullable()
+      table.timestamp('updated_at').nullable()
     })
   }
 

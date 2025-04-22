@@ -8,8 +8,8 @@ export default class extends BaseSchema {
       table.bigIncrements('id')
       table.string('name').notNullable().unique()
       table.string('abbreviation').notNullable().unique()
-      table.timestamp('created_at')
-      table.timestamp('updated_at')
+      table.timestamp('created_at').notNullable()
+      table.timestamp('updated_at').nullable()
     })
   }
 

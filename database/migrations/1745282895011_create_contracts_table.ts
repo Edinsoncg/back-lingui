@@ -9,8 +9,8 @@ export default class extends BaseSchema {
       table.string('name').notNullable().unique()
       table.integer('mont_amount').notNullable().unsigned()
       table.integer('hour_amount').notNullable().unsigned()
-      table.timestamp('created_at')
-      table.timestamp('updated_at')
+      table.timestamp('created_at').notNullable()
+      table.timestamp('updated_at').nullable()
     })
   }
 
