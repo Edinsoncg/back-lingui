@@ -1,3 +1,4 @@
+import { UserFactory } from '#database/factories/user_factory'
 import User from '#models/user'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 
@@ -14,5 +15,6 @@ export default class extends BaseSeeder {
       phone_number: '123456789',
       workday_id: 1,
     })
+    await UserFactory.createMany(99)
   }
 }

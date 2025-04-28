@@ -6,7 +6,7 @@ export default class extends BaseSeeder {
     const class_type = await ClassType.createMany([
       { type: 'Practica' },
       { type: 'Tecnica' },
-      { type: 'club' },
+      { type: 'Club' },
     ])
   }
 }

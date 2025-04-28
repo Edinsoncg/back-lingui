@@ -23,7 +23,7 @@ export default class extends BaseSchema {
       table.string('phone_number').nullable().unique()
       table
         .bigInteger('workday_id')
-        .notNullable()
+        .nullable()
         .unsigned()
         .references('id')
         .inTable('workdays')
