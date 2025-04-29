@@ -16,7 +16,7 @@ export const UserFactory = factory
       email: faker.internet.email(),
       password: faker.internet.password(),
       phone_number: '+57 3' + faker.string.numeric( { length: 9 }),
-      workday_id: Math.random() < 0.8
+      workday_id: Math.random() < 0.7
       ? null
       : faker.number.int({ min: 1, max: 3}),
     }
