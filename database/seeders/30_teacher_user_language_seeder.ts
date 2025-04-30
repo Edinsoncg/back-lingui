@@ -4,10 +4,10 @@ import { TeacherUserLanguageFactory } from '#database/factories/teacher_user_lan
 
 export default class extends BaseSeeder {
   async run() {
-    const TeacherUserLanguage = await TeacherUserLanguage.create({
-      user_id: 1,
+    const teacher = await TeacherUserLanguage.create({
+      user_id: 71,
       language_id: 1,
     })
-    await TeacherUserLanguageFactory.create(30)
+    await TeacherUserLanguageFactory.createMany(20)
   }
 }

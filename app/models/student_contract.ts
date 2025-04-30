@@ -12,10 +12,10 @@ export default class StudentContract extends BaseModel {
   declare contract_id: number
 
   @column()
-  declare contract_start_date: DateTime
+  declare start_date: DateTime
 
   @column()
-  declare contract_end_date: DateTime
+  declare end_date: DateTime
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

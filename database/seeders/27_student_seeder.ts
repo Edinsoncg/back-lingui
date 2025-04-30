@@ -9,6 +9,6 @@ export default class extends BaseSeeder {
       student_code: '2335',
       status_id: 1,
     })
-    await StudentFactory.createMany(99)
+    await StudentFactory.createMany(69)
   }
 }

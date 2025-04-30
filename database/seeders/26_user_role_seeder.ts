@@ -6,7 +6,7 @@ export default class extends BaseSeeder {
   async run() {
     const userRole = await UserRole.create({
     user_id: 1,
-    role_id: 1,
+    role_id: 4,
   })
     await UserRoleFactory.createMany(99)
   }
