@@ -2,16 +2,30 @@ import SupportMaterial from '#models/support_material'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class SupportMaterialsController {
-  async index({ response }: HttpContext) {
+  /*async index({ response }: HttpContext) {
     const material = await SupportMaterial.all()
+    return response.ok(material)
+  }*/
+
+  async index({ response }: HttpContext) {
+    const material = await SupportMaterial.query().preload('level')
     return response.ok(material)
   }
 
-  async show({ params, response }: HttpContext) {
+  /*async show({ params, response }: HttpContext) {
     const material = await SupportMaterial.findOrFail(params.id)
     if (!material) {
       return response.notFound({ message: 'Material not found' })
     }
+    return response.ok(material)
+  }*/
+
+  async show({ params, response }: HttpContext) {
+    const material = await SupportMaterial.query()
+      .where('id', params.id)
+      .preload('level')
+      .firstOrFail()
+
     return response.ok(material)
   }
 

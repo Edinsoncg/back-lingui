@@ -1,5 +1,7 @@
-import { BaseModel, column } from "@adonisjs/lucid/orm"
-import { DateTime } from "luxon"
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import Level from '#models/level'
+import { DateTime } from 'luxon'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
 export default class SupportMaterial extends BaseModel {
   @column({ isPrimary: true })
@@ -16,6 +18,11 @@ export default class SupportMaterial extends BaseModel {
 
   @column()
   declare link: string
+
+  @belongsTo(() => Level, {
+    foreignKey: 'level_id',
+  })
+  declare level: BelongsTo<typeof Level>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
