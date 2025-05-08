@@ -13,6 +13,7 @@ import DashboardController from '#controllers/dashboard_controller'
 import { middleware } from '#start/kernel'
 import AuthController from '#controllers/auth_controller'
 import SupportMaterialsController from '#controllers/support_materials_controller'
+import LevelsController from '#controllers/levels_controller'
 
 router.get('/', async () => {
   return {
@@ -26,6 +27,7 @@ router.get('/dashboard', [DashboardController, 'index'])
   })
 )
 
+//RUTAS SUPPORT MATERIAL
 
 router.get('/support-material', [SupportMaterialsController, 'index'])
   .use(middleware.auth({
@@ -58,3 +60,10 @@ router.delete('/support-material/:id', [SupportMaterialsController, 'destroy'])
 )
 
 router.post('login', [AuthController, 'login'])
+
+//RUTA DE NIVELES
+router.get('/levels', [LevelsController, 'index'])
+  .use(middleware.auth({
+    guards: ['api']
+  })
+)
