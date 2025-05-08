@@ -13,7 +13,7 @@ export default class extends BaseSeeder {
       email: 'adonis@gmail.com',
       password: '1234',
       phone_number: '123456789',
-      workday_id: 1,
+      workday_id: null,
     })
     await UserFactory.createMany(99)
   }

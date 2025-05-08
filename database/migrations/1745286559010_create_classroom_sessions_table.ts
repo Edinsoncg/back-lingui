@@ -42,7 +42,7 @@ export default class extends BaseSchema {
         .inTable('components')
         .onDelete('CASCADE')
       table
-        .bigInteger('teacher_user__language_id')
+        .bigInteger('teacher_user_language_id')
         .notNullable()
         .unsigned()
         .references('id')

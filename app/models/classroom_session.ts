@@ -18,13 +18,19 @@ export default class ClassroomSession extends BaseModel {
   declare unit_id: number
 
   @column()
+  declare component_id: number
+
+  @column()
   declare teacher_user_language_id: number
 
   @column()
-  declare start_date: DateTime
+  declare class_type_id: number
 
   @column()
-  declare end_date: DateTime
+  declare start_at: DateTime
+
+  @column()
+  declare end_at: DateTime
 
   @column()
   declare duration: number
