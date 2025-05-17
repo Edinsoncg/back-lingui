@@ -5,8 +5,6 @@ export default class SupportMaterialsController {
   async list({ request, response }: HttpContext) {
     const page = request.input('page', 1)
     const limit = request.input('limit', 10)
-    const sortBy = request.input('sortBy', 'name')
-    const order = request.input('order', 'asc')
     const name = request.input('name')
 
     const query = SupportMaterial.query().preload('level')
@@ -17,14 +15,14 @@ export default class SupportMaterialsController {
     }
 
     // Ordenamiento
-    query.orderBy(sortBy, order)
+    query.orderBy('created_at', 'desc')
 
     // Paginación
     const paginator = await query.paginate(page, limit)
 
     return response.ok({
       data: paginator.all(), // devuelve los registros de la página actual
-      meta: paginator.getMeta(), // total de todos los registros
+      total: paginator.getMeta().total, // toDo: meta:paginator.getMeta(),
     })
   }
 
