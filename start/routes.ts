@@ -29,19 +29,19 @@ router.get('/dashboard', [DashboardController, 'index'])
 
 //RUTAS SUPPORT MATERIAL
 
-router.get('/support-material', [SupportMaterialsController, 'index'])
+router.get('/support-material', [SupportMaterialsController, 'list'])
   .use(middleware.auth({
     guards: ['api']
   })
 )
 
-router.get('/support-material/:id', [SupportMaterialsController, 'show'])
+router.get('/support-material/:id', [SupportMaterialsController, 'get'])
   .use(middleware.auth({
     guards: ['api']
   })
 )
 
-router.post('/support-material', [SupportMaterialsController, 'store'])
+router.post('/support-material', [SupportMaterialsController, 'create'])
   .use(middleware.auth({
     guards: ['api']
   })
