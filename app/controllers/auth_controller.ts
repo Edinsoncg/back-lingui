@@ -7,6 +7,13 @@ export default class AuthController {
     const user = await User.verifyCredentials(email, password)
     const token = await User.accessTokens.create(user)
 
-    return token
+    return {
+      user: {
+        id: user.id,
+        name: user.first_name,
+        email: user.email,
+      },
+      token: token,
+    }
   }
 }

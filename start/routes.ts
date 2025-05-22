@@ -14,6 +14,7 @@ import { middleware } from '#start/kernel'
 import AuthController from '#controllers/auth_controller'
 import SupportMaterialsController from '#controllers/support_materials_controller'
 import LevelsController from '#controllers/levels_controller'
+import AgendaController from '#controllers/agenda_controller'
 
 router.get('/', async () => {
   return {
@@ -27,21 +28,33 @@ router.get('/dashboard', [DashboardController, 'index'])
   })
 )
 
+router.group(() => {
+  router.get('/', [AgendaController, 'list'])
+  router.get('/:id', [AgendaController, 'get'])
+  router.post('/', [AgendaController, 'create'])
+  router.put('/:id', [AgendaController, 'update'])
+  router.delete('/:id', [AgendaController, 'destroy'])
+}).prefix('/agenda')
+  .use(middleware.auth({
+    guards: ['api']
+  })
+)
+
 //RUTAS SUPPORT MATERIAL
 
-router.get('/support-material', [SupportMaterialsController, 'index'])
+router.get('/support-material', [SupportMaterialsController, 'list'])
   .use(middleware.auth({
     guards: ['api']
   })
 )
 
-router.get('/support-material/:id', [SupportMaterialsController, 'show'])
+router.get('/support-material/:id', [SupportMaterialsController, 'get'])
   .use(middleware.auth({
     guards: ['api']
   })
 )
 
-router.post('/support-material', [SupportMaterialsController, 'store'])
+router.post('/support-material', [SupportMaterialsController, 'create'])
   .use(middleware.auth({
     guards: ['api']
   })

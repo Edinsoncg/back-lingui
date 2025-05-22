@@ -2,11 +2,9 @@ import SupportMaterial from '#models/support_material'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class SupportMaterialsController {
-  async index({ request, response }: HttpContext) {
+  async list({ request, response }: HttpContext) {
     const page = request.input('page', 1)
     const limit = request.input('limit', 10)
-    const sortBy = request.input('sortBy', 'name')
-    const order = request.input('order', 'asc')
     const name = request.input('name')
 
     const query = SupportMaterial.query().preload('level')
@@ -17,18 +15,18 @@ export default class SupportMaterialsController {
     }
 
     // Ordenamiento
-    query.orderBy(sortBy, order)
+    query.orderBy('created_at', 'desc')
 
     // Paginación
     const paginator = await query.paginate(page, limit)
 
     return response.ok({
-      data: paginator.all(), // ✅ devuelve los registros de la página actual
-      total: paginator.getMeta().total, // ✅ total de todos los registros
+      data: paginator.all(), // devuelve los registros de la página actual
+      total: paginator.getMeta().total, // toDo: meta:paginator.getMeta(),
     })
   }
 
-  async show({ params, response }: HttpContext) {
+  async get({ params, response }: HttpContext) {
     const material = await SupportMaterial.query()
       .where('id', params.id)
       .preload('level')
@@ -37,7 +35,7 @@ export default class SupportMaterialsController {
     return response.ok(material)
   }
 
-  async store({ request, response }: HttpContext) {
+  async create({ request, response }: HttpContext) {
     const data = request.only(['name', 'level_id', 'description', 'link'])
     const material = await SupportMaterial.create(data)
     return response.created(material)
