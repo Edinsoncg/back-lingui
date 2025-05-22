@@ -15,6 +15,8 @@ import AuthController from '#controllers/auth_controller'
 import SupportMaterialsController from '#controllers/support_materials_controller'
 import LevelsController from '#controllers/levels_controller'
 import AgendaController from '#controllers/agenda_controller'
+import ClassroomsController from '#controllers/classrooms_controller'
+
 
 router.get('/', async () => {
   return {
@@ -76,6 +78,13 @@ router.post('login', [AuthController, 'login'])
 
 //RUTA DE NIVELES
 router.get('/levels', [LevelsController, 'index'])
+  .use(middleware.auth({
+    guards: ['api']
+  })
+)
+
+//Ruta de Classroom
+router.get('/classroom', [ClassroomsController, 'list'])
   .use(middleware.auth({
     guards: ['api']
   })
