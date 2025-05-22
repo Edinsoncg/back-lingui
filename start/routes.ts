@@ -14,6 +14,7 @@ import { middleware } from '#start/kernel'
 import AuthController from '#controllers/auth_controller'
 import SupportMaterialsController from '#controllers/support_materials_controller'
 import LevelsController from '#controllers/levels_controller'
+import AgendaController from '#controllers/agenda_controller'
 
 router.get('/', async () => {
   return {
@@ -22,6 +23,18 @@ router.get('/', async () => {
 })
 
 router.get('/dashboard', [DashboardController, 'index'])
+  .use(middleware.auth({
+    guards: ['api']
+  })
+)
+
+router.group(() => {
+  router.get('/', [AgendaController, 'list'])
+  router.get('/:id', [AgendaController, 'get'])
+  router.post('/', [AgendaController, 'create'])
+  router.put('/:id', [AgendaController, 'update'])
+  router.delete('/:id', [AgendaController, 'destroy'])
+}).prefix('/agenda')
   .use(middleware.auth({
     guards: ['api']
   })
