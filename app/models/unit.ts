@@ -8,6 +8,12 @@ export default class Unit extends BaseModel {
   @column()
   declare name: string
 
+  @column()
+  declare element_id: number
+
+  @column()
+  declare module_id: number
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

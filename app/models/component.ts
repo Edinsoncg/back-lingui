@@ -8,6 +8,9 @@ export default class Component extends BaseModel {
   @column()
   declare name: string
 
+  @column()
+  declare order: string
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
