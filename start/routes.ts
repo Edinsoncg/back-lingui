@@ -15,6 +15,13 @@ import AuthController from '#controllers/auth_controller'
 import SupportMaterialsController from '#controllers/support_materials_controller'
 import LevelsController from '#controllers/levels_controller'
 import AgendaController from '#controllers/agenda_controller'
+import ClassroomsController from '#controllers/classrooms_controller'
+import DocumentTypeController from '#controllers/document_type_controller'
+import WorkdayController from '#controllers/workday_controller'
+import UserRoleController from '#controllers/user_rol_controller'
+import RoleController from '#controllers/role_controller'
+import UserController from '#controllers/setting_user_controller'
+
 
 router.get('/', async () => {
   return {
@@ -74,8 +81,50 @@ router.delete('/support-material/:id', [SupportMaterialsController, 'destroy'])
 
 router.post('login', [AuthController, 'login'])
 
+//RUTA DE USER
+router.group(() => {
+  router.get('/', [UserController, 'list'])
+  router.get('/:id', [UserController, 'get'])
+  router.post('/', [UserController, 'create'])
+  router.patch('/:id', [UserController, 'update'])
+  router.delete('/:id', [UserController, 'destroy'])
+}).prefix('/setting/user')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
 //RUTA DE NIVELES
 router.get('/levels', [LevelsController, 'index'])
+  .use(middleware.auth({
+    guards: ['api']
+  })
+)
+
+//RUTA DE DOCUMENT_TYPE
+router.get('/document-type', [DocumentTypeController, 'list'])
+.use(middleware.auth({
+  guards: ['api']
+})
+)
+
+//RUTA DE WORKDAY
+router.get('/workday', [WorkdayController, 'list'])
+.use(middleware.auth({
+  guards: ['api']
+})
+)
+
+//RUTA DE ROLE
+router.get('/role', [RoleController, 'list'])
+.use(middleware.auth({
+  guards: ['api']
+})
+)
+
+//Ruta de Classroom
+router.get('/classroom', [ClassroomsController, 'list'])
   .use(middleware.auth({
     guards: ['api']
   })
