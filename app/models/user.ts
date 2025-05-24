@@ -6,6 +6,7 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import DocumentType from '#models/document_type'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import Workday from './workday.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -50,6 +51,11 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @column()
   declare workday_id: number | null
+
+  @belongsTo(() => Workday, {
+    foreignKey: 'workday_id',
+  })
+  declare workday: BelongsTo<typeof Workday>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

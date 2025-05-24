@@ -11,7 +11,7 @@ export default class UserController {
 
     const query = UserRole.query()
       .preload('user', (userQuery) => {
-        userQuery.preload('documentType')
+        userQuery.preload('documentType').preload('workday')
       })
       .preload('role')
 
@@ -36,7 +36,7 @@ export default class UserController {
     const userRole = await UserRole.query()
       .where('user_id', params.id)
       .preload('user', (userQuery) => {
-        userQuery.preload('documentType')
+        userQuery.preload('documentType').preload('workday')
       })
       .preload('role')
       .first()
@@ -47,7 +47,7 @@ export default class UserController {
 
     return response.ok({
       ...userRole.user.serialize(),
-      role: userRole.role?.name ?? null,
+      role: userRole.role!.name,
       role_id: userRole.role_id,
     })
   }
@@ -75,11 +75,13 @@ export default class UserController {
     })
 
     await user.load('documentType')
+    await user.load('workday')
 
     return response.created({
       ...user.serialize(),
       role_id: roleId,
-      document_type: user.documentType?.name ?? null,
+      document_type: user.documentType!.name,
+      workday: user.workday?.journal ?? null,
     })
   }
 
@@ -111,11 +113,13 @@ export default class UserController {
     }
 
     await user.load('documentType')
+    await user.load('workday')
 
     return response.ok({
       ...user.serialize(),
       role_id: roleId,
-      document_type: user.documentType?.name ?? null,
+      document_type: user.documentType!.name,
+      workday: user.workday?.journal ?? null,
     })
   }
 

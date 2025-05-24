@@ -20,7 +20,7 @@ import DocumentTypeController from '#controllers/document_type_controller'
 import WorkdayController from '#controllers/workday_controller'
 import UserRoleController from '#controllers/user_rol_controller'
 import RoleController from '#controllers/role_controller'
-import UserController from '#controllers/user_controller'
+import UserController from '#controllers/setting_user_controller'
 
 
 router.get('/', async () => {
@@ -88,7 +88,7 @@ router.group(() => {
   router.post('/', [UserController, 'create'])
   router.patch('/:id', [UserController, 'update'])
   router.delete('/:id', [UserController, 'destroy'])
-}).prefix('/users')
+}).prefix('/setting/user')
   .use(
     middleware.auth({
       guards: ['api'],
@@ -111,13 +111,6 @@ router.get('/document-type', [DocumentTypeController, 'list'])
 
 //RUTA DE WORKDAY
 router.get('/workday', [WorkdayController, 'list'])
-.use(middleware.auth({
-  guards: ['api']
-})
-)
-
-//RUTA DE USER_ROL
-router.get('/user-role', [UserRoleController, 'list'])
 .use(middleware.auth({
   guards: ['api']
 })
