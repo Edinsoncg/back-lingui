@@ -1,10 +1,8 @@
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import Level from '#models/level'
-import Unit from '#models/unit'
-import Component from '#models/component'
 import Student from '#models/student'
+import UnitComponent from '#models/unit_component'
 
 export default class StudentProgress extends BaseModel {
   @column({ isPrimary: true })
@@ -14,33 +12,17 @@ export default class StudentProgress extends BaseModel {
   declare student_id: number
 
   @column()
-  declare level_id: number
-
-  @column()
-  declare unit_id: number
-
-  @column()
-  declare component_id: number
+  declare unit_component_id: number
 
   @belongsTo(() => Student, {
     foreignKey: 'student_id',
   })
   declare student: BelongsTo<typeof Student>
 
-  @belongsTo(() => Level, {
-    foreignKey: 'level_id',
+  @belongsTo(() => UnitComponent, {
+    foreignKey: 'united_component_id',
   })
-  declare level: BelongsTo<typeof Level>
-
-  @belongsTo(() => Unit, {
-    foreignKey: 'unit_id',
-  })
-  declare unit: BelongsTo<typeof Unit>
-
-  @belongsTo(() => Component, {
-    foreignKey: 'component_id',
-  })
-  declare component: BelongsTo<typeof Component>
+  declare unit_component: BelongsTo<typeof UnitComponent>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

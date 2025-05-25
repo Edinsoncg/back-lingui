@@ -9,7 +9,7 @@ export default class Level extends BaseModel {
   declare name: string
 
   @column()
-  declare order: string
+  declare sequence_order: number
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
