@@ -4,6 +4,7 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Level from '#models/level'
 import Unit from '#models/unit'
 import Component from '#models/component'
+import Student from '#models/student'
 
 export default class StudentProgress extends BaseModel {
   @column({ isPrimary: true })
@@ -20,6 +21,11 @@ export default class StudentProgress extends BaseModel {
 
   @column()
   declare component_id: number
+
+  @belongsTo(() => Student, {
+    foreignKey: 'student_id',
+  })
+  declare student: BelongsTo<typeof Student>
 
   @belongsTo(() => Level, {
     foreignKey: 'level_id',

@@ -14,18 +14,18 @@ export default class extends BaseSchema {
         .inTable('students')
         .onDelete('CASCADE')
       table
-        .bigInteger('unit_id')
-        .notNullable()
-        .unsigned()
-        .references('id')
-        .inTable('units')
-        .onDelete('CASCADE')
-      table
         .bigInteger('level_id')
         .notNullable()
         .unsigned()
         .references('id')
         .inTable('levels')
+        .onDelete('CASCADE')
+      table
+        .bigInteger('unit_id')
+        .notNullable()
+        .unsigned()
+        .references('id')
+        .inTable('units')
         .onDelete('CASCADE')
       table
         .bigInteger('component_id')
@@ -36,6 +36,8 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
       table.timestamp('created_at')
       table.timestamp('updated_at')
+
+      table.unique(['student_id', 'level_id', 'unit_id', 'component_id'], 'student_progresses_unique')
     })
   }
 

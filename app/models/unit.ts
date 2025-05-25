@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
 export default class Unit extends BaseModel {
   @column({ isPrimary: true })
@@ -13,6 +14,16 @@ export default class Unit extends BaseModel {
 
   @column()
   declare module_id: number
+
+  @belongsTo(() => Unit, {
+    foreignKey: 'element_id',
+  })
+  declare element: BelongsTo<typeof Unit>
+
+  @belongsTo(() => Unit, {
+    foreignKey: 'module_id',
+  })
+  declare module: BelongsTo<typeof Unit>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
