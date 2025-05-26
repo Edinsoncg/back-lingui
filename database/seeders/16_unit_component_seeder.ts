@@ -5,8 +5,8 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 
 export default class extends BaseSeeder {
   async run() {
-    const units = await Unit.all()
-    const components = await Component.all()
+    const units = await Unit.query().orderBy('id', 'asc')
+    const components = await Component.query().orderBy('id', 'asc')
     const data = []
 
     for (const unit of units) {

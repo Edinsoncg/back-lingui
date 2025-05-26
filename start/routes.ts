@@ -99,15 +99,15 @@ router.group(() => {
 //RUTA DE Seguimiento Academico
 router.group(() => {
   router.get('/', [StudentAcademyProgressesController, 'list'])
-  router.get('/:id', [StudentAcademyProgressesController, 'get'])
-  router.post('/', [StudentAcademyProgressesController, 'create'])
-  router.patch('/:id', [StudentAcademyProgressesController, 'update'])
-  router.delete('/:id', [StudentAcademyProgressesController, 'destroy'])
+  router.post('/', [StudentAcademyProgressesController, 'complete'])
+  router.delete('/', [StudentAcademyProgressesController, 'uncomplete'])
+  router.post('/save', [StudentAcademyProgressesController, 'saveProgress'])
 }).prefix('/progress/academic')
-  .use(middleware.auth({
-    guards: ['api']
-  })
-)
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
 
 //RUTA DE NIVELES
 router.get('/levels', [LevelsController, 'index'])
@@ -140,6 +140,6 @@ router.get('/role', [RoleController, 'list'])
 //Ruta de Classroom
 router.get('/classroom', [ClassroomsController, 'list'])
   .use(middleware.auth({
-    guards: ['api']
-  })
+    guards: ['api']
+  })
 )

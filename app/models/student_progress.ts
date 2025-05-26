@@ -14,13 +14,16 @@ export default class StudentProgress extends BaseModel {
   @column()
   declare unit_component_id: number
 
+  @column()
+  declare status: 'active' | 'archived'
+
   @belongsTo(() => Student, {
     foreignKey: 'student_id',
   })
   declare student: BelongsTo<typeof Student>
 
   @belongsTo(() => UnitComponent, {
-    foreignKey: 'united_component_id',
+    foreignKey: 'unit_component_id',
   })
   declare unit_component: BelongsTo<typeof UnitComponent>
 
@@ -28,5 +31,5 @@ export default class StudentProgress extends BaseModel {
   declare createdAt: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime
+  declare updatedAt: DateTime
 }

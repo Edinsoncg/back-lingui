@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
+import type { HasMany } from '@adonisjs/lucid/types/relations'
+import Unit from '#models/unit'
 
 export default class Level extends BaseModel {
   @column({ isPrimary: true })
@@ -10,6 +12,9 @@ export default class Level extends BaseModel {
 
   @column()
   declare sequence_order: number
+
+  @hasMany(() => Unit)
+  declare units: HasMany<typeof Unit>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
