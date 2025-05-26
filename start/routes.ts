@@ -21,6 +21,7 @@ import WorkdayController from '#controllers/workday_controller'
 import UserRoleController from '#controllers/user_rol_controller'
 import RoleController from '#controllers/role_controller'
 import UserController from '#controllers/setting_user_controller'
+import StudentAcademyProgressesController from '#controllers/student_academy_progresses_controller'
 
 
 router.get('/', async () => {
@@ -95,6 +96,19 @@ router.group(() => {
     })
   )
 
+//RUTA DE Seguimiento Academico
+router.group(() => {
+  router.get('/', [StudentAcademyProgressesController, 'list'])
+  router.post('/', [StudentAcademyProgressesController, 'complete'])
+  router.delete('/', [StudentAcademyProgressesController, 'uncomplete'])
+  router.post('/save', [StudentAcademyProgressesController, 'saveProgress'])
+}).prefix('/progress/academic')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
 //RUTA DE NIVELES
 router.get('/levels', [LevelsController, 'index'])
   .use(middleware.auth({
@@ -126,6 +140,6 @@ router.get('/role', [RoleController, 'list'])
 //Ruta de Classroom
 router.get('/classroom', [ClassroomsController, 'list'])
   .use(middleware.auth({
-    guards: ['api']
-  })
+    guards: ['api']
+  })
 )

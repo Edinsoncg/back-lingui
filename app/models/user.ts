@@ -6,7 +6,7 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import DocumentType from '#models/document_type'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import Workday from './workday.js'
+import Workday from '#models/workday'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
