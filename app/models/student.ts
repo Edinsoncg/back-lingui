@@ -1,7 +1,10 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
+import StudentContract from '#models/student_contract'
+import StudentAttendance from '#models/student_attendance'
+import Status from '#models/status'
 
 export default class Student extends BaseModel {
   @column({ isPrimary: true })
@@ -21,10 +24,20 @@ export default class Student extends BaseModel {
   })
   declare user: BelongsTo<typeof User>
 
-  @belongsTo(() => User, {
+  @belongsTo(() => Status, {
     foreignKey: 'status_id',
   })
-  declare status: BelongsTo<typeof User>
+  declare status: BelongsTo<typeof Status>
+
+  @hasMany(() => StudentContract, {
+    foreignKey: 'student_id',
+  })
+  declare contracts: HasMany<typeof StudentContract>
+
+  @hasMany(() => StudentAttendance, {
+    foreignKey: 'student_id',
+  })
+  declare attendances: HasMany<typeof StudentAttendance>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

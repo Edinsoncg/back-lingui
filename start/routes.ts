@@ -22,6 +22,7 @@ import UserRoleController from '#controllers/user_rol_controller'
 import RoleController from '#controllers/role_controller'
 import UserController from '#controllers/setting_user_controller'
 import StudentAcademyProgressesController from '#controllers/student_academy_progresses_controller'
+import StudentContractProgressesController from '#controllers/student_contract_progresses_controller'
 
 
 router.get('/', async () => {
@@ -103,6 +104,17 @@ router.group(() => {
   router.delete('/', [StudentAcademyProgressesController, 'uncomplete'])
   router.post('/save', [StudentAcademyProgressesController, 'saveProgress'])
 }).prefix('/progress/academic')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+//RUTA DE Seguiemiento de Contratos
+router.group(() => {
+  router.get('/', [StudentContractProgressesController, 'list'])
+  router.patch('/', [StudentContractProgressesController, 'update'])
+}).prefix('/progress/contract')
   .use(
     middleware.auth({
       guards: ['api'],
