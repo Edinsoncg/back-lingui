@@ -4,10 +4,20 @@ import { BaseSeeder } from '@adonisjs/lucid/seeders'
 
 export default class extends BaseSeeder {
   async run() {
-    const studentAttendance = await StudentAttendance.create({
-      student_id: 1,
-      classroom_session_id: 1,
-    })
+    const studentAttendance = await StudentAttendance.createMany([
+      {
+        student_id: 1,
+        classroom_session_id: 1,
+      },
+      {
+        student_id: 1,
+        classroom_session_id: 2,
+      },
+      {
+        student_id: 1,
+        classroom_session_id: 3,
+      },
+    ])
     await StudentAttendanceFactory.createMany(69)
   }
 }

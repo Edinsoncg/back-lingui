@@ -40,7 +40,7 @@ export default class StudentContractProgressesController {
 
     // 1. Filtrar solo asistencias de esta semana
     const weeklyAttendances = attendances.filter(
-      (attendance) => attendance.classroomSession?.startAt > startOfWeek
+      (attendance) => attendance.classroomSession?.start_at > startOfWeek
     )
 
     // 2. Sumar duración total semanal
@@ -49,17 +49,39 @@ export default class StudentContractProgressesController {
       0
     )
 
+    const weeklySessions = weeklyAttendances.length
+
     // 3. De las sesiones semanales, tomar solo las que también son del mes actual
-    const monthlyHours = weeklyAttendances
-      .filter((attendance) => attendance.classroomSession?.startAt > startOfMonth)
-      .reduce((sum, attendance) => sum + (attendance.classroomSession?.duration ?? 0), 0)
+    const monthlyAttendances = attendances.filter(
+      (attendance) => attendance.classroomSession?.start_at > startOfMonth
+    )
+
+    const monthlyHours = monthlyAttendances.reduce(
+      (sum, attendance) => sum + (attendance.classroomSession?.duration ?? 0),
+      0
+    )
+    const monthlySessions = monthlyAttendances.length
+
+    // 4. Total de horas acumuladas sin importar fechas
+    const totalHours = attendances.reduce(
+      (sum, attendance) => sum + (attendance.classroomSession?.duration ?? 0),
+      0
+    )
+
+    const executedWeeks = weeklyHours > 0 ? totalHours / weeklyHours : 0
+    const executedMonths = monthlyHours > 0 ? totalHours / monthlyHours : 0
 
     return response.ok({
       student,
       attendances,
       progress: {
         weekly_hours_completed: weeklyHours,
+        weekly_sessions_completed: weeklySessions,
         monthly_hours_completed: monthlyHours,
+        monthly_sessions_completed: monthlySessions,
+        total_hours_completed: totalHours,
+        executed_weeks: executedWeeks,
+        executed_months: executedMonths,
       },
     })
   }
