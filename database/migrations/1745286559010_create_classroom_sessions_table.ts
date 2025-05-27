@@ -36,7 +36,7 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
       table
         .bigInteger('component_id')
-        .nullable()
+        .notNullable()
         .unsigned()
         .references('id')
         .inTable('components')

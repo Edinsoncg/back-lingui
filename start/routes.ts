@@ -7,7 +7,6 @@
 |
 */
 
-import IniciosController from '#controllers/inicios_controller'
 import router from '@adonisjs/core/services/router'
 import DashboardController from '#controllers/dashboard_controller'
 import { middleware } from '#start/kernel'
@@ -18,12 +17,12 @@ import AgendaController from '#controllers/agenda_controller'
 import ClassroomsController from '#controllers/classrooms_controller'
 import DocumentTypeController from '#controllers/document_type_controller'
 import WorkdayController from '#controllers/workday_controller'
-import UserRoleController from '#controllers/user_rol_controller'
 import RoleController from '#controllers/role_controller'
 import UserController from '#controllers/setting_user_controller'
 import StudentAcademyProgressesController from '#controllers/student_academy_progresses_controller'
 import StudentContractProgressesController from '#controllers/student_contract_progresses_controller'
-
+import ContractsController from '#controllers/contracts_controller'
+import StatusesController from '#controllers/statuses_controller'
 
 router.get('/', async () => {
   return {
@@ -154,4 +153,18 @@ router.get('/classroom', [ClassroomsController, 'list'])
   .use(middleware.auth({
     guards: ['api']
   })
+)
+
+//RUTA DE Contract
+router.get('/contract', [ContractsController, 'list'])
+.use(middleware.auth({
+  guards: ['api']
+})
+)
+
+//RUTA DE Status
+router.get('/status', [StatusesController, 'list'])
+.use(middleware.auth({
+  guards: ['api']
+})
 )
