@@ -10,7 +10,7 @@ export const StudentAttendanceFactory = factory
     student++
     classroomSession++
     return {
-      student_id: student,
+      student_contract_id: student,
       classroom_session_id: classroomSession,
     }
   })

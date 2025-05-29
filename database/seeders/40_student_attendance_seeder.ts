@@ -6,15 +6,39 @@ export default class extends BaseSeeder {
   async run() {
     const studentAttendance = await StudentAttendance.createMany([
       {
-        student_id: 1,
+        student_contract_id: 1,
         classroom_session_id: 1,
       },
       {
-        student_id: 1,
+        student_contract_id: 1,
         classroom_session_id: 2,
       },
       {
-        student_id: 1,
+        student_contract_id: 1,
+        classroom_session_id: 3,
+      },
+      {
+        student_contract_id: 2,
+        classroom_session_id: 1,
+      },
+      {
+        student_contract_id: 2,
+        classroom_session_id: 2,
+      },
+      {
+        student_contract_id: 2,
+        classroom_session_id: 3,
+      },
+      {
+        student_contract_id: 3,
+        classroom_session_id: 1,
+      },
+      {
+        student_contract_id: 3,
+        classroom_session_id: 2,
+      },
+      {
+        student_contract_id: 3,
         classroom_session_id: 3,
       },
     ])
