@@ -7,11 +7,11 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.bigIncrements('id')
       table
-        .bigInteger('student_id')
+        .bigInteger('student_contract_id')
         .notNullable()
         .unsigned()
         .references('id')
-        .inTable('students')
+        .inTable('student_contracts')
         .onDelete('CASCADE')
       table
         .bigInteger('classroom_session_id')

@@ -1,78 +1,99 @@
+// ✅ CONTROLADOR: student_contract_progresses_controller.ts
 import type { HttpContext } from '@adonisjs/core/http'
 import Student from '#models/student'
 import StudentContract from '#models/student_contract'
 import StudentAttendance from '#models/student_attendance'
-import { DateTime } from 'luxon'
+import Contract from '#models/contract'
 
 export default class StudentContractProgressesController {
   public async list({ request, response }: HttpContext) {
     const studentCode = request.input('student_code')
-
     if (!studentCode) {
-      return response.ok({
-        student: null,
-        contracts: [],
-        attendances: [],
-      })
+      return response.ok({ student: null, attendances: [], progress: {} })
     }
 
     const student = await Student.query()
       .where('student_code', studentCode)
+      .preload('user')
       .preload('status')
-      .preload('contracts', (contractQuery) => {
-        contractQuery.preload('contract')
-      })
+      .preload('contracts', (query) => query.preload('contract').orderBy('created_at', 'desc'))
       .first()
 
     if (!student) {
       return response.notFound({ message: 'Estudiante no encontrado' })
     }
 
-    // Traer todas las asistencias con sus sesiones
+    const activeContract = student.contracts?.[0]
+    const contractType = activeContract?.contract
+
+    if (!activeContract || !contractType) {
+      return response.badRequest({ message: 'Contrato activo no encontrado' })
+    }
+
     const attendances = await StudentAttendance.query()
-      .where('student_id', student.id)
+      .where('student_contract_id', activeContract.id)
       .preload('classroomSession')
 
-    // Rango de fechas actual
-    const now = DateTime.now()
-    const startOfWeek = now.startOf('week')
-    const startOfMonth = now.startOf('month')
+    const now = new Date()
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - now.getDay())
 
-    // 1. Filtrar solo asistencias de esta semana
-    const weeklyAttendances = attendances.filter(
-      (attendance) => attendance.classroomSession?.startAt > startOfWeek
-    )
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-    // 2. Sumar duración total semanal
-    const weeklyHours = weeklyAttendances.reduce(
-      (sum, attendance) => sum + (attendance.classroomSession?.duration ?? 0),
-      0
-    )
+    const weeklyAttendances = attendances.filter((attendance) => attendance.classroomSession?.start_at > startOfWeek)
+    const monthlyAttendances = attendances.filter((attendance) => attendance.classroomSession?.start_at > startOfMonth)
 
-    // 3. De las sesiones semanales, tomar solo las que también son del mes actual
-    const monthlyHours = weeklyAttendances
-      .filter((attendance) => attendance.classroomSession?.startAt > startOfMonth)
-      .reduce((sum, attendance) => sum + (attendance.classroomSession?.duration ?? 0), 0)
+    const sumDurations = (items: typeof attendances) =>
+      items.reduce((sum, a) => sum + (a.classroomSession?.duration || 0), 0)
+
+    const weeklyHours = sumDurations(weeklyAttendances)
+    const weeklySessions = weeklyAttendances.length
+    const monthlyHours = sumDurations(monthlyAttendances)
+    const monthlySessions = monthlyAttendances.length
+    const totalHours = sumDurations(attendances)
+
+    const weekLimit = contractType.hour_amount_week
+    const monthLimit = weekLimit * 4
+
+    const weeklyPercent = weekLimit ? Math.min((weeklyHours / weekLimit) * 100, 100) : 0
+    const monthlyPercent = monthLimit ? Math.min((monthlyHours / monthLimit) * 100, 100) : 0
+
+    // Porcentaje de tiempo de contrato transcurrido
+    let date_percent = 0
+    const start = activeContract.start_date
+    const end = activeContract.end_date
+    const nowTime = now.getTime()
+    if (start && end && nowTime >= start.getTime()) {
+      const total = end.getTime() - start.getTime()
+      const transcurrido = nowTime - start.getTime()
+      date_percent = total > 0 ? Math.min((transcurrido / total) * 100, 100) : 0
+    }
 
     return response.ok({
-      student,
+      student: {
+        id: student.id,
+        code: student.student_code,
+        full_name: `${student.user.first_name} ${student.user.first_last_name}`,
+        status: student.status,
+        contract: contractType,
+        contracts: student.contracts,
+      },
       attendances,
       progress: {
         weekly_hours_completed: weeklyHours,
+        weekly_sessions_completed: weeklySessions,
+        weekly_percent: weeklyPercent,
         monthly_hours_completed: monthlyHours,
+        monthly_sessions_completed: monthlySessions,
+        monthly_percent: monthlyPercent,
+        total_hours_completed: totalHours,
+        date_percent: date_percent,
       },
     })
   }
 
-// recuerde hacer los controladores, rutas y services de contract y status
-
   public async update({ request, response }: HttpContext) {
-    const {
-      student_id,
-      new_status_id,
-      new_start_date,
-      new_contract_id,
-    } = request.only([
+    const { student_id, new_status_id, new_start_date, new_contract_id } = request.only([
       'student_id',
       'new_status_id',
       'new_start_date',
@@ -80,7 +101,7 @@ export default class StudentContractProgressesController {
     ])
 
     const student = await Student.findOrFail(student_id)
-    student.statusId = new_status_id
+    student.status_id = new_status_id
     await student.save()
 
     const currentContract = await StudentContract.query()
@@ -88,12 +109,20 @@ export default class StudentContractProgressesController {
       .orderBy('created_at', 'desc')
       .firstOrFail()
 
-    if (new_start_date) {
-      currentContract.startDate = DateTime.fromISO(new_start_date)
+    if (new_contract_id) {
+      currentContract.contract_id = new_contract_id
     }
 
-    if (new_contract_id) {
-      currentContract.contractId = new_contract_id
+    if (new_start_date) {
+      const newStartDate = new Date(new_start_date)
+      currentContract.start_date = newStartDate
+
+      // Usamos el contrato actualizado para obtener los meses correctos
+      const contract = await Contract.findOrFail(currentContract.contract_id)
+      const mounth = contract.month_amount
+      const newEndDate = new Date(newStartDate)
+      newEndDate.setMonth(newEndDate.getMonth() + mounth)
+      currentContract.end_date = newEndDate
     }
 
     await currentContract.save()

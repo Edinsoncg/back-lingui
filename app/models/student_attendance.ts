@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import Student from '#models/student'
+import StudentContract from '#models/student_contract'
 import ClassroomSession from '#models/classroom_session'
 
 export default class StudentAttendance extends BaseModel {
@@ -9,15 +9,15 @@ export default class StudentAttendance extends BaseModel {
   declare id: number
 
   @column()
-  declare student_id: number
+  declare student_contract_id: number
 
   @column()
   declare classroom_session_id: number
 
-  @belongsTo(() => Student, {
-    foreignKey: 'student_id',
+  @belongsTo(() => StudentContract, {
+    foreignKey: 'student_contract_id',
   })
-  declare student: BelongsTo<typeof Student>
+  declare student_contract: BelongsTo<typeof StudentContract>
 
   @belongsTo(() => ClassroomSession, {
     foreignKey: 'classroom_session_id',

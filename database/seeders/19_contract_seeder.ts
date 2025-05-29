@@ -7,12 +7,14 @@ export default class extends BaseSeeder {
       {
         name: 'Normal',
         month_amount: 12,
-        hour_amount: 156,
+        hour_amount_contract: 156,
+        hour_amount_week: 3,
       },
       {
         name: 'Intensivo',
         month_amount: 6,
-        hour_amount: 156,
+        hour_amount_contract: 156,
+        hour_amount_week: 6,
       },
     ])
   }

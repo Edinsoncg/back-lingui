@@ -12,7 +12,10 @@ export default class Contract extends BaseModel {
   declare month_amount: number
 
   @column()
-  declare hour_amount: number
+  declare hour_amount_contract: number
+
+  @column()
+  declare hour_amount_week: number
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
