@@ -24,9 +24,9 @@ export default class StudentContractProgressesController {
     }
 
     const activeContract = student.contracts?.[0]
-    const contractConfig = activeContract?.contract
+    const contractType = activeContract?.contract
 
-    if (!activeContract || !contractConfig) {
+    if (!activeContract || !contractType) {
       return response.badRequest({ message: 'Contrato activo no encontrado' })
     }
 
@@ -52,8 +52,8 @@ export default class StudentContractProgressesController {
     const monthlySessions = monthlyAttendances.length
     const totalHours = sumDurations(attendances)
 
-    const weekLimit = contractConfig.hour_amount_week
-    const monthLimit = weekLimit * contractConfig.month_amount
+    const weekLimit = contractType.hour_amount_week
+    const monthLimit = weekLimit * 4
 
     const weeklyPercent = weekLimit ? Math.min((weeklyHours / weekLimit) * 100, 100) : 0
     const monthlyPercent = monthLimit ? Math.min((monthlyHours / monthLimit) * 100, 100) : 0
@@ -75,7 +75,7 @@ export default class StudentContractProgressesController {
         code: student.student_code,
         full_name: `${student.user.first_name} ${student.user.first_last_name}`,
         status: student.status,
-        contract: contractConfig,
+        contract: contractType,
         contracts: student.contracts,
       },
       attendances,
@@ -118,11 +118,11 @@ export default class StudentContractProgressesController {
       currentContract.start_date = newStartDate
 
       // Usamos el contrato actualizado para obtener los meses correctos
-      const contrato = await Contract.findOrFail(currentContract.contract_id)
-      const meses = contrato.month_amount
-      const nuevaFechaFinal = new Date(newStartDate)
-      nuevaFechaFinal.setMonth(nuevaFechaFinal.getMonth() + meses)
-      currentContract.end_date = nuevaFechaFinal
+      const contract = await Contract.findOrFail(currentContract.contract_id)
+      const mounth = contract.month_amount
+      const newEndDate = new Date(newStartDate)
+      newEndDate.setMonth(newEndDate.getMonth() + mounth)
+      currentContract.end_date = newEndDate
     }
 
     await currentContract.save()
