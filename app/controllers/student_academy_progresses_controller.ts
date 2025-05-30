@@ -3,59 +3,89 @@ import StudentProgress from '#models/student_progress'
 import Student from '#models/student'
 import Unit from '#models/unit'
 import Level from '#models/level'
+import StudentUnit from '#models/student_unit'
+import StudentLevel from '#models/student_level'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class StudentAcademyProgressesController {
-  /**
-   * Lista el progreso del estudiante por código y muestra componentes actuales
-   */
   async list({ request, response }: HttpContext) {
     const studentCode = request.input('student_code')
 
     if (!studentCode) {
-      return response.ok({
-        student: null,
-        current: null,
-        progress: [],
-      })
+      return response.ok({ student: null, current: null, progress: [] })
     }
 
     const student = await Student.query().where('student_code', studentCode).preload('user').first()
+    if (!student) return response.notFound({ message: 'Studiante no encontrado' })
 
-    if (!student) {
-      return response.notFound({ message: 'Student not found' })
-    }
-
-    // Cargar progreso del estudiante
-    const progressList = await StudentProgress.query()
+    // Obtener nivel actual desde student_levels
+    const currentLevelRecord = await StudentLevel.query()
       .where('student_id', student.id)
-      .preload('unit_component', (query) => {
-        query.preload('unit', (unitQuery) => unitQuery.preload('level')).preload('component')
-      })
+      .where('is_current', true)
+      .preload('level')
+      .first()
 
-    const completedComponents = progressList.map((p) => p.unit_component_id)
+    if (!currentLevelRecord) return response.ok({ student: student.student_code, current: null, progress: [] })
 
-    // Detectar unidad actual (mayor sequence_order)
-    const last = progressList.reduce((acc, curr) => {
-      const a = acc.unit_component.unit.sequence_order
-      const b = curr.unit_component.unit.sequence_order
-      return b > a ? curr : acc
-    }, progressList[0])
+    // Obtener unidad actual desde student_units
+    const currentUnitRecord = await StudentUnit.query()
+      .where('student_id', student.id)
+      .where('is_current', true)
+      .preload('unit')
+      .first()
 
-    const currentUnit = last.unit_component.unit
-    const currentLevel = currentUnit.level
+    if (!currentUnitRecord) return response.ok({ student: student.student_code, current: null, progress: [] })
 
-    // Cargar todos los unit_components de la unidad actual
+    // Obtener componentes de la unidad actual con preload
     const unitComponents = await UnitComponent.query()
-      .where('unit_id', currentUnit.id)
+      .where('unit_id', currentUnitRecord.unit_id)
       .preload('component')
 
-    const currentComponents = unitComponents.map((uc) => ({
-      id: uc.id,
-      component: uc.component.name,
-      completed: completedComponents.includes(uc.id),
-      student_id: student.id,
-    }))
+    // Obtener componentes completados por el estudiante
+    const completedProgress = await StudentProgress.query()
+      .where('student_id', student.id)
+
+    const completedComponentIds = completedProgress.map((progress) => progress.unit_component_id)
+
+    const currentComponents = []
+    for (const unitComponent of unitComponents) {
+      currentComponents.push({
+        id: unitComponent.id,
+        component: unitComponent.component.name,
+        completed: completedComponentIds.includes(unitComponent.id),
+        student_id: student.id,
+      })
+    }
+
+    const progress = []
+    for (const item of completedProgress) {
+      const unitComponent = await UnitComponent.query()
+        .where('id', item.unit_component_id)
+        .preload('unit', (query) => query.preload('level'))
+        .preload('component')
+        .first()
+
+      if (unitComponent) {
+        progress.push({
+          unit_component_id: unitComponent.id,
+          unit: unitComponent.unit.name,
+          component: unitComponent.component.name,
+        })
+      }
+    }
+
+    // Calcular progreso de unidades en el nivel actual
+    const allUnitsInLevel = await Unit.query()
+      .where('level_id', currentLevelRecord.level_id)
+      .orderBy('sequence_order', 'asc')
+
+    const unitIndex = allUnitsInLevel.findIndex(
+      (unit) => unit.id === currentUnitRecord.unit_id
+    )
+
+    const progressPercentage = allUnitsInLevel.length
+      ? Math.round(((unitIndex + 1) / allUnitsInLevel.length) * 100)
+      : 0
 
     return response.ok({
       student: {
@@ -63,15 +93,12 @@ export default class StudentAcademyProgressesController {
         name: `${student.user?.first_name ?? ''} ${student.user?.first_last_name ?? ''}`,
       },
       current: {
-        level: currentLevel.name,
-        unit: currentUnit.name,
+        level: currentLevelRecord.level.name,
+        unit: currentUnitRecord.unit.name,
         components: currentComponents,
+        progressPercentage
       },
-      progress: progressList.map((p) => ({
-        unit_component_id: p.unit_component_id,
-        unit: p.unit_component.unit.name,
-        component: p.unit_component.component.name,
-      })),
+      progress,
     })
   }
 
@@ -82,7 +109,7 @@ export default class StudentAcademyProgressesController {
     const { student_id, unit_component_id } = request.only(['student_id', 'unit_component_id'])
 
     if (!student_id || !unit_component_id) {
-      return response.badRequest({ message: 'student_id and unit_component_id are required' })
+      return response.badRequest({ message: 'student_id y unit_component_id son requeridos' })
     }
 
     const exists = await StudentProgress.query()
@@ -91,11 +118,11 @@ export default class StudentAcademyProgressesController {
       .first()
 
     if (exists) {
-      return response.ok({ message: 'Already completed' })
+      return response.ok({ message: 'Completado exitosamente' })
     }
 
     await StudentProgress.create({ student_id, unit_component_id })
-    return response.created({ message: 'Component marked as completed' })
+    return response.created({ message: 'Componente completado exitosamente ' })
   }
 
   /**
@@ -106,7 +133,7 @@ export default class StudentAcademyProgressesController {
     const unit_component_id = request.input('unit_component_id')
 
     if (!student_id || !unit_component_id) {
-      return response.badRequest({ message: 'student_id and unit_component_id are required' })
+      return response.badRequest({ message: 'student_id y unit_component_id son requeridos' })
     }
 
     const progress = await StudentProgress.query()
@@ -115,21 +142,20 @@ export default class StudentAcademyProgressesController {
       .first()
 
     if (!progress) {
-      return response.notFound({ message: 'Progress not found' })
+      return response.notFound({ message: 'Progreso no encontrado' })
     }
 
     await progress.delete()
-    return response.ok({ message: 'Component unmarked' })
+    return response.ok({ message: 'Componente no completado' })
   }
 
-  async saveProgress({ request, response }: HttpContext) {
+   async saveProgress({ request, response }: HttpContext) {
     const { student_id, changes } = request.only(['student_id', 'changes'])
 
     if (!student_id || !Array.isArray(changes)) {
-      return response.badRequest({ message: 'student_id and valid changes array are required' })
+      return response.badRequest({ message: 'student_id y cambios validos son requeridos' })
     }
 
-    // 1. Guardar los cambios actuales
     for (const item of changes) {
       const { unit_component_id, completed } = item
       if (!unit_component_id) continue
@@ -146,14 +172,13 @@ export default class StudentAcademyProgressesController {
       }
     }
 
-    // 2. Obtener la unidad actual basada en uno de los cambios completados
-    const firstCompletedId = changes.find((c) => c.completed)?.unit_component_id
-    if (!firstCompletedId) {
+    const firstCompleted = changes.find((c) => c.completed)
+    if (!firstCompleted) {
       return response.ok({ message: 'Progreso actualizado sin avance de unidad' })
     }
 
     const currentUnitComponent = await UnitComponent.query()
-      .where('id', firstCompletedId)
+      .where('id', firstCompleted.unit_component_id)
       .preload('unit', (query) => query.preload('level'))
       .first()
 
@@ -162,6 +187,8 @@ export default class StudentAcademyProgressesController {
     }
 
     const currentUnit = currentUnitComponent.unit
+    const currentLevel = currentUnit.level
+
     const unitComponents = await UnitComponent.query().where('unit_id', currentUnit.id)
 
     const allCompleted = unitComponents.every((uc) =>
@@ -172,17 +199,29 @@ export default class StudentAcademyProgressesController {
       return response.ok({ message: 'Progreso actualizado' })
     }
 
-    // 3. Buscar siguiente unidad en el mismo nivel
+    // Marcar unidad actual como completada
+    const studentUnit = await StudentUnit.query()
+      .where('student_id', student_id)
+      .andWhere('unit_id', currentUnit.id)
+      .first()
+
+    if (studentUnit) {
+      studentUnit.is_current = false
+      studentUnit.completed = true
+      await studentUnit.save()
+    }
+
+    // Buscar siguiente unidad
     let nextUnit = await Unit.query()
       .where('level_id', currentUnit.level_id)
       .where('sequence_order', '>', currentUnit.sequence_order)
       .orderBy('sequence_order', 'asc')
       .first()
 
-    // 4. Si no hay más unidades → avanzar al siguiente nivel
+    let advancedLevel = false
     if (!nextUnit) {
       const nextLevel = await Level.query()
-        .where('sequence_order', '>', currentUnit.level.sequence_order)
+        .where('sequence_order', '>', currentLevel.sequence_order)
         .orderBy('sequence_order', 'asc')
         .first()
 
@@ -191,23 +230,52 @@ export default class StudentAcademyProgressesController {
           .where('level_id', nextLevel.id)
           .orderBy('sequence_order', 'asc')
           .first()
+
+        if (nextUnit) advancedLevel = true
       }
     }
 
-    // 5. Si no hay más niveles o unidades, finaliza
     if (!nextUnit) {
       return response.ok({
         message: 'Progreso actualizado. Ya completó el último nivel y unidad.',
       })
     }
 
-    // 6. Cargar e insertar componentes de la siguiente unidad
-    const nextComponents = await UnitComponent.query().where('unit_id', nextUnit.id)
+    // ✅ Insertar componentes de la siguiente unidad sin marcarlos como completados
+    const nextUnitComponents = await UnitComponent.query().where('unit_id', nextUnit.id)
+    for (const uc of nextUnitComponents) {
+      await StudentProgress.query()
+        .where('student_id', student_id)
+        .andWhere('unit_component_id', uc.id)
+        .delete() // ✅ Eliminar por si había registros erróneos por seeders
+    }
 
-    for (const uc of nextComponents) {
-      await StudentProgress.firstOrCreate({
+    // ✅ Registrar nueva unidad como actual
+    await StudentUnit.create({
+      student_id,
+      unit_id: nextUnit.id,
+      is_current: true,
+      completed: false,
+    })
+
+    // ✅ Si avanzó de nivel, registrar también el nuevo nivel como actual
+    if (advancedLevel) {
+      const currentLevel = await StudentLevel.query()
+        .where('student_id', student_id)
+        .andWhere('is_current', true)
+        .first()
+
+      if (currentLevel) {
+        currentLevel.is_current = false
+        currentLevel.completed = true
+        await currentLevel.save()
+      }
+
+      await StudentLevel.create({
         student_id,
-        unit_component_id: uc.id,
+        level_id: nextUnit.level_id,
+        is_current: true,
+        completed: false,
       })
     }
 
