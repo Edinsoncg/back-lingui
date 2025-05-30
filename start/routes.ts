@@ -23,6 +23,7 @@ import StudentAcademyProgressesController from '#controllers/student_academy_pro
 import StudentContractProgressesController from '#controllers/student_contract_progresses_controller'
 import ContractsController from '#controllers/contracts_controller'
 import StatusesController from '#controllers/statuses_controller'
+import ReportStudentController from '#controllers/report_student_controller'
 
 router.get('/', async () => {
   return {
@@ -168,3 +169,12 @@ router.get('/status', [StatusesController, 'list'])
   guards: ['api']
 })
 )
+
+// Reportes de estudiantes
+router.group(() => {
+  router.get('/', [ReportStudentController, 'index'])
+  router.get('/:code', [ReportStudentController, 'getByCode'])
+}).prefix('/report/student')
+  .use(middleware.auth({
+    guards: ['api']
+  }))
