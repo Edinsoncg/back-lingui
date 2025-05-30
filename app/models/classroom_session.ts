@@ -5,6 +5,7 @@ import type { HasMany } from '@adonisjs/lucid/types/relations'
 import StudentAttendance from '#models/student_attendance'
 import Unit from '#models/unit'
 import Level from '#models/level'
+import Modality from '#models/modality'
 
 export default class ClassroomSession extends BaseModel {
   @column({ isPrimary: true })
@@ -15,6 +16,11 @@ export default class ClassroomSession extends BaseModel {
 
   @column()
   declare modality_id: number
+
+  @belongsTo(() => Modality, {
+    foreignKey: 'level_id',
+  })
+  declare modality: BelongsTo<typeof Modality>
 
   @column()
   declare level_id: number

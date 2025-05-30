@@ -173,7 +173,7 @@ router.get('/status', [StatusesController, 'list'])
 // Reportes de estudiantes
 router.group(() => {
   router.get('/', [ReportStudentController, 'index'])
-  router.get('/:code', [ReportStudentController, 'getByCode'])
+  router.get('/:code', [ReportStudentController, 'show'])
 }).prefix('/report/student')
   .use(middleware.auth({
     guards: ['api']

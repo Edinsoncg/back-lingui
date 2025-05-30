@@ -74,4 +74,77 @@ export default class ReportStudentController {
       total: result.getMeta().total,
     })
   }
+
+  public async show({ params, response }: HttpContext) {
+    const studentCode = params.code
+
+    if (!studentCode) {
+      return response.badRequest({ message: 'El código del estudiante es requerido' })
+    }
+
+    const student = await Student.query()
+      .where('student_code', studentCode)
+      .preload('user')
+      .preload('status')
+      .preload('studentLanguages', (query) => query.preload('language'))
+      .preload('contracts', (query) =>
+        query
+          .preload('contract')
+          .preload('attendances', (att) =>
+            att.preload('classroomSession', (session) => {
+              session
+                .preload('level')
+                .preload('unit')
+                .preload('modality') // si la relación existe
+            })
+          )
+          .orderBy('created_at', 'desc')
+      )
+      .first()
+
+    if (!student) {
+      return response.notFound({ message: 'Estudiante no encontrado' })
+    }
+
+    // Obtener contrato activo
+    const contratoActivo = student.contracts[0]
+    const contrato = contratoActivo?.contract
+
+    const idioma = student.studentLanguages[0]?.language?.name || 'N/A'
+    const nombre = [student.user.first_name, student.user.middle_name].filter(Boolean).join(' ')
+    const apellido = [student.user.first_last_name, student.user.second_last_name].filter(Boolean).join(' ')
+
+    const clases = contratoActivo?.attendances.map((asistencia) => {
+    const clase = asistencia.classroomSession
+    return {
+      id: clase.id,
+      fecha: new Date(clase.start_at).toISOString().split('T')[0],
+      nivel: clase.level?.name || 'N/A',
+      unidad: clase.unit?.name || 'N/A',
+      modalidad: clase.modality?.kind || 'N/A',
+      duracion: clase.duration,
+      asistio: true,
+    }}) || []
+
+    return response.ok({
+      estudiante: {
+        codigo: student.student_code,
+        nombre,
+        apellido,
+        estado: student.status?.name || 'N/A',
+        idioma,
+        tipo_contrato: contrato?.name || 'No asignado',
+        fecha_inicio: contratoActivo?.start_date
+          ? new Date(contratoActivo.start_date).toISOString().split('T')[0]
+          : 'N/A',
+        fecha_fin: contratoActivo?.end_date
+          ? new Date(contratoActivo.end_date).toISOString().split('T')[0]
+          : 'N/A',
+
+      },
+      clases,
+    })
+  }
+
+
 }
