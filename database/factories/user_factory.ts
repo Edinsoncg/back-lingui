@@ -16,6 +16,9 @@ export const UserFactory = factory
       : faker.person.middleName(),
       first_last_name: faker.person.lastName(),
       second_last_name: faker.person.lastName(),
+      profile_picture: Math.random() < 0.3
+      ? null
+      : faker.image.avatar(),
       document_type_id: isFirst70
       ? faker.number.int({ min: 1, max: 2})
       : 1,

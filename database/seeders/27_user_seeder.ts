@@ -8,6 +8,7 @@ export default class extends BaseSeeder {
       first_name: 'adonis',
       first_last_name: 'v6',
       second_last_name: 'test',
+      profile_picture: null,
       document_type_id: 1,
       document_number: '123456789',
       email: 'adonis@gmail.com',

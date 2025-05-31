@@ -23,6 +23,7 @@ import StudentAcademyProgressesController from '#controllers/student_academy_pro
 import StudentContractProgressesController from '#controllers/student_contract_progresses_controller'
 import ContractsController from '#controllers/contracts_controller'
 import StatusesController from '#controllers/statuses_controller'
+import MyProfileController from '#controllers/my_profile_controller'
 
 router.get('/', async () => {
   return {
@@ -119,6 +120,19 @@ router.group(() => {
       guards: ['api'],
     })
   )
+
+//RUTA DE USER PROFILE
+
+router.group(() => {
+  router.get('/', [MyProfileController, 'list'])
+  router.patch('/', [MyProfileController, 'update'] )
+}).prefix('/profile')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
 
 //RUTA DE NIVELES
 router.get('/levels', [LevelsController, 'index'])
