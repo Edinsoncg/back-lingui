@@ -24,6 +24,7 @@ import StudentContractProgressesController from '#controllers/student_contract_p
 import ContractsController from '#controllers/contracts_controller'
 import StatusesController from '#controllers/statuses_controller'
 import ReportStudentController from '#controllers/report_student_controller'
+import ReportClassroomController from '#controllers/report_classroom_controller'
 
 router.get('/', async () => {
   return {
@@ -175,6 +176,16 @@ router.group(() => {
   router.get('/', [ReportStudentController, 'index'])
   router.get('/:code', [ReportStudentController, 'show'])
 }).prefix('/report/student')
+  .use(middleware.auth({
+    guards: ['api']
+  }))
+
+// Reportes de salones
+router.group(() => {
+  router.get('/', [ReportClassroomController, 'index'])
+  router.get('/:id', [ReportClassroomController, 'show'])
+}
+).prefix('/report/classroom')
   .use(middleware.auth({
     guards: ['api']
   }))

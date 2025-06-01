@@ -6,6 +6,7 @@ import StudentAttendance from '#models/student_attendance'
 import Unit from '#models/unit'
 import Level from '#models/level'
 import Modality from '#models/modality'
+import TeacherUserLanguage from '#models/teacher_user_language'
 
 export default class ClassroomSession extends BaseModel {
   @column({ isPrimary: true })
@@ -18,7 +19,7 @@ export default class ClassroomSession extends BaseModel {
   declare modality_id: number
 
   @belongsTo(() => Modality, {
-    foreignKey: 'level_id',
+    foreignKey: 'modality_id',
   })
   declare modality: BelongsTo<typeof Modality>
 
@@ -44,10 +45,15 @@ export default class ClassroomSession extends BaseModel {
   @column()
   declare teacher_user_language_id: number
 
+  @belongsTo(() => TeacherUserLanguage, {
+    foreignKey: 'teacher_user_language_id',
+  })
+  declare teacher: BelongsTo<typeof TeacherUserLanguage>
+
   @column()
   declare class_type_id: number
 
-  @column()
+  @column.dateTime()
   declare start_at: DateTime
 
   @column()
