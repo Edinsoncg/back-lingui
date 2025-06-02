@@ -9,7 +9,7 @@ export default class ProfileController {
     const allowedQueryKeys = [] // No debe aceptar nada en este endpoint
     const queryKeys = Object.keys(request.qs())
 
-    if (queryKeys.length > 0 && queryKeys.some(k => !allowedQueryKeys.includes(k))) {
+    if (queryKeys.length > 0 && queryKeys.some((key) => !allowedQueryKeys.includes(key))) {
       return response.badRequest({
         message: 'No se permiten parámetros en esta ruta',
       })
@@ -17,12 +17,7 @@ export default class ProfileController {
 
     const user = await User.findOrFail(auth.user!.id)
 
-    return response.ok({
-      ...user.toJSON(),
-      profilePictureUrl: user.profilePicture
-        ? `${request.protocol()}://${request.hostname()}/${user.profilePicture}`
-        : null,
-    })
+    return response.ok(user)
   }
 
   public async update({ auth, request, response }: HttpContext) {
@@ -39,31 +34,27 @@ export default class ProfileController {
         'phone_number',
       ])
 
+      user.merge(data)
+
       const image = request.file('profile_picture', {
         size: '2mb',
         extnames: ['jpg', 'jpeg', 'png', 'webp'],
       })
 
-      if (image) {
-        const fileName = `${new Date().getTime()}.${image.extname}`
+      if (image && image.isValid) {
+        const fileName = `${Date.now()}.${image.extname}`
         await image.move(Application.publicPath('uploads/profile_pictures'), {
           name: fileName,
           overwrite: true,
         })
-        user.profilePicture = `uploads/profile_pictures/${fileName}`
+        user.profile_picture = `uploads/profile_pictures/${fileName}`
       }
 
-      user.merge(data)
       await user.save()
 
       return response.ok({
         message: 'Perfil actualizado',
-        user: {
-          ...user.toJSON(),
-          profilePictureUrl: user.profilePicture
-            ? `${request.protocol()}://${request.hostname()}/${user.profilePicture}`
-            : null,
-        },
+        user: user,
       })
     } catch (error) {
       console.error(error)

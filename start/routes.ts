@@ -8,8 +8,8 @@
 */
 
 import router from '@adonisjs/core/services/router'
-import DashboardController from '#controllers/dashboard_controller'
 import { middleware } from '#start/kernel'
+import DashboardController from '#controllers/dashboard_controller'
 import AuthController from '#controllers/auth_controller'
 import SupportMaterialsController from '#controllers/support_materials_controller'
 import LevelsController from '#controllers/levels_controller'
@@ -24,6 +24,7 @@ import StudentContractProgressesController from '#controllers/student_contract_p
 import ContractsController from '#controllers/contracts_controller'
 import StatusesController from '#controllers/statuses_controller'
 import MyProfileController from '#controllers/my_profile_controller'
+import MyProfilePasswordsController from '#controllers/my_profile_passwords_controller'
 
 router.get('/', async () => {
   return {
@@ -31,66 +32,55 @@ router.get('/', async () => {
   }
 })
 
-router.get('/dashboard', [DashboardController, 'index'])
-  .use(middleware.auth({
-    guards: ['api']
+router.get('/dashboard', [DashboardController, 'index']).use(
+  middleware.auth({
+    guards: ['api'],
   })
 )
 
-router.group(() => {
-  router.get('/', [AgendaController, 'list'])
-  router.get('/:id', [AgendaController, 'get'])
-  router.post('/', [AgendaController, 'create'])
-  router.put('/:id', [AgendaController, 'update'])
-  router.delete('/:id', [AgendaController, 'destroy'])
-}).prefix('/agenda')
-  .use(middleware.auth({
-    guards: ['api']
+router
+  .group(() => {
+    router.get('/', [AgendaController, 'list'])
+    router.get('/:id', [AgendaController, 'get'])
+    router.post('/', [AgendaController, 'create'])
+    router.put('/:id', [AgendaController, 'update'])
+    router.delete('/:id', [AgendaController, 'destroy'])
   })
-)
+  .prefix('/agenda')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
 
 //RUTAS SUPPORT MATERIAL
-
-router.get('/support-material', [SupportMaterialsController, 'list'])
-  .use(middleware.auth({
-    guards: ['api']
+router
+  .group(() => {
+    router.get('/', [SupportMaterialsController, 'list'])
+    router.get('/:id', [SupportMaterialsController, 'get'])
+    router.post('/', [SupportMaterialsController, 'create'])
+    router.patch('/:id', [SupportMaterialsController, 'update'])
+    router.delete('/:id', [SupportMaterialsController, 'destroy'])
   })
-)
-
-router.get('/support-material/:id', [SupportMaterialsController, 'get'])
-  .use(middleware.auth({
-    guards: ['api']
-  })
-)
-
-router.post('/support-material', [SupportMaterialsController, 'create'])
-  .use(middleware.auth({
-    guards: ['api']
-  })
-)
-
-router.patch('/support-material/:id', [SupportMaterialsController, 'update'])
-  .use(middleware.auth({
-    guards: ['api']
-  })
-)
-
-router.delete('/support-material/:id', [SupportMaterialsController, 'destroy'])
-  .use(middleware.auth({
-    guards: ['api']
-  })
-)
+  .prefix('/support-material')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
 
 router.post('login', [AuthController, 'login'])
 
 //RUTA DE USER
-router.group(() => {
-  router.get('/', [UserController, 'list'])
-  router.get('/:id', [UserController, 'get'])
-  router.post('/', [UserController, 'create'])
-  router.patch('/:id', [UserController, 'update'])
-  router.delete('/:id', [UserController, 'destroy'])
-}).prefix('/setting/user')
+router
+  .group(() => {
+    router.get('/', [UserController, 'list'])
+    router.get('/:id', [UserController, 'get'])
+    router.post('/', [UserController, 'create'])
+    router.patch('/:id', [UserController, 'update'])
+    router.delete('/:id', [UserController, 'destroy'])
+  })
+  .prefix('/setting/user')
   .use(
     middleware.auth({
       guards: ['api'],
@@ -98,12 +88,14 @@ router.group(() => {
   )
 
 //RUTA DE Seguimiento Academico
-router.group(() => {
-  router.get('/', [StudentAcademyProgressesController, 'list'])
-  router.post('/', [StudentAcademyProgressesController, 'complete'])
-  router.delete('/', [StudentAcademyProgressesController, 'uncomplete'])
-  router.post('/save', [StudentAcademyProgressesController, 'saveProgress'])
-}).prefix('/progress/academic')
+router
+  .group(() => {
+    router.get('/', [StudentAcademyProgressesController, 'list'])
+    router.post('/', [StudentAcademyProgressesController, 'complete'])
+    router.delete('/', [StudentAcademyProgressesController, 'uncomplete'])
+    router.post('/save', [StudentAcademyProgressesController, 'saveProgress'])
+  })
+  .prefix('/progress/academic')
   .use(
     middleware.auth({
       guards: ['api'],
@@ -111,10 +103,12 @@ router.group(() => {
   )
 
 //RUTA DE Seguiemiento de Contratos
-router.group(() => {
-  router.get('/', [StudentContractProgressesController, 'list'])
-  router.patch('/', [StudentContractProgressesController, 'update'])
-}).prefix('/progress/contract')
+router
+  .group(() => {
+    router.get('/', [StudentContractProgressesController, 'list'])
+    router.patch('/', [StudentContractProgressesController, 'update'])
+  })
+  .prefix('/progress/contract')
   .use(
     middleware.auth({
       guards: ['api'],
@@ -123,62 +117,70 @@ router.group(() => {
 
 //RUTA DE USER PROFILE
 
-router.group(() => {
-  router.get('/', [MyProfileController, 'list'])
-  router.patch('/', [MyProfileController, 'update'] )
-}).prefix('/profile')
+router
+  .group(() => {
+    router.get('/', [MyProfileController, 'list'])
+    router.patch('/', [MyProfileController, 'update'])
+  })
+  .prefix('/profile')
   .use(
     middleware.auth({
       guards: ['api'],
     })
   )
 
+//RUTA DE USER PASSWORDS
+router.patch('/profile/password', [MyProfilePasswordsController, 'update']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
+)
 
 //RUTA DE NIVELES
-router.get('/levels', [LevelsController, 'index'])
-  .use(middleware.auth({
-    guards: ['api']
+router.get('/levels', [LevelsController, 'index']).use(
+  middleware.auth({
+    guards: ['api'],
   })
 )
 
 //RUTA DE DOCUMENT_TYPE
-router.get('/document-type', [DocumentTypeController, 'list'])
-.use(middleware.auth({
-  guards: ['api']
-})
+router.get('/document-type', [DocumentTypeController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
 )
 
 //RUTA DE WORKDAY
-router.get('/workday', [WorkdayController, 'list'])
-.use(middleware.auth({
-  guards: ['api']
-})
+router.get('/workday', [WorkdayController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
 )
 
 //RUTA DE ROLE
-router.get('/role', [RoleController, 'list'])
-.use(middleware.auth({
-  guards: ['api']
-})
+router.get('/role', [RoleController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
 )
 
 //Ruta de Classroom
-router.get('/classroom', [ClassroomsController, 'list'])
-  .use(middleware.auth({
-    guards: ['api']
-  })
+router.get('/classroom', [ClassroomsController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
 )
 
 //RUTA DE Contract
-router.get('/contract', [ContractsController, 'list'])
-.use(middleware.auth({
-  guards: ['api']
-})
+router.get('/contract', [ContractsController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
 )
 
 //RUTA DE Status
-router.get('/status', [StatusesController, 'list'])
-.use(middleware.auth({
-  guards: ['api']
-})
+router.get('/status', [StatusesController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
 )
