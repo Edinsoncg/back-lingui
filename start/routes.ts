@@ -13,7 +13,7 @@ import DashboardController from '#controllers/dashboard_controller'
 import AuthController from '#controllers/auth_controller'
 import SupportMaterialsController from '#controllers/support_materials_controller'
 import LevelsController from '#controllers/levels_controller'
-import AgendaController from '#controllers/agenda_controller'
+import AgendaController from '#controllers/agendas_controller'
 import ClassroomsController from '#controllers/classrooms_controller'
 import DocumentTypeController from '#controllers/document_type_controller'
 import WorkdayController from '#controllers/workday_controller'
@@ -28,6 +28,9 @@ import MyProfilePasswordsController from '#controllers/my_profile_passwords_cont
 import ReportStudentController from '#controllers/report_student_controller'
 import ReportClassroomController from '#controllers/report_classroom_controller'
 import ReportTeacherController from '#controllers/report_teacher_controller'
+import ClasstypesController from '#controllers/class_types_controller'
+import UnitsController from '#controllers/units_controller'
+import LanguagesController from '#controllers/languages_controller'
 
 router.get('/', async () => {
   return {
@@ -46,7 +49,7 @@ router
     router.get('/', [AgendaController, 'list'])
     router.get('/:id', [AgendaController, 'get'])
     router.post('/', [AgendaController, 'create'])
-    router.put('/:id', [AgendaController, 'update'])
+    router.patch('/:id', [AgendaController, 'update'])
     router.delete('/:id', [AgendaController, 'destroy'])
   })
   .prefix('/agenda')
@@ -139,8 +142,22 @@ router.patch('/profile/password', [MyProfilePasswordsController, 'update']).use(
   })
 )
 
+//RUTA DE IDIOMAS
+router.get('/language', [LanguagesController, 'index']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
+)
+
 //RUTA DE NIVELES
 router.get('/levels', [LevelsController, 'index']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
+)
+
+//RUTA DE UNIDADES
+router.get('/unit', [UnitsController, 'index']).use(
   middleware.auth({
     guards: ['api'],
   })
@@ -226,3 +243,10 @@ router
       guards: ['api'],
     })
   )
+
+//RUTA DE CLASSTYPES
+router.get('/classtypes', [ClasstypesController, 'index']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
+)
