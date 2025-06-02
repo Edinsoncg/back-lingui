@@ -1,5 +1,8 @@
+import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
+import House from '#models/house'
+import ClassroomSession from '#models/classroom_session'
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
 
 export default class Classroom extends BaseModel {
   @column({ isPrimary: true })
@@ -13,6 +16,18 @@ export default class Classroom extends BaseModel {
 
   @column()
   declare house_id: number
+
+  // 🔗 Relación con House
+  @belongsTo(() => House, {
+    foreignKey: 'house_id',
+  })
+  declare house: BelongsTo<typeof House>
+
+  // 🔗 Relación con ClassroomSession
+  @hasMany(() => ClassroomSession, {
+    foreignKey: 'classroom_id',
+  })
+  declare classroomSessions: HasMany<typeof ClassroomSession>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
