@@ -23,7 +23,7 @@ export default class ReportClassroomController {
         const sesiones = classroom.classroomSessions || []
         const ultimaClase =
           sesiones.length && sesiones[0].start_at
-            ? sesiones[0].start_at.toISODate()
+            ? sesiones[0].start_at.toISOString().split('T')[0]
             : 'Sin registro'
 
         return {
@@ -67,7 +67,7 @@ export default class ReportClassroomController {
 
     const clases = sesiones.map((clase) => ({
       id: clase.id,
-      fecha: clase.start_at.toISODate(),
+      fecha: clase.start_at.toISOString().split('T')[0],
       nivel: clase.level?.name || 'N/A',
       unidad: clase.unit?.name || 'N/A',
       modalidad: clase.modality?.kind || 'N/A',

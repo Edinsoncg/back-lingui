@@ -9,7 +9,6 @@
 
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
-import DashboardController from '#controllers/dashboard_controller'
 import AuthController from '#controllers/auth_controller'
 import SupportMaterialsController from '#controllers/support_materials_controller'
 import LevelsController from '#controllers/levels_controller'
@@ -28,18 +27,13 @@ import MyProfilePasswordsController from '#controllers/my_profile_passwords_cont
 import ReportStudentController from '#controllers/report_student_controller'
 import ReportClassroomController from '#controllers/report_classroom_controller'
 import ReportTeacherController from '#controllers/report_teacher_controller'
+import DashboardAdminController from '#controllers/dashboard_admin_controller'
 
 router.get('/', async () => {
   return {
     hello: 'world',
   }
 })
-
-router.get('/dashboard', [DashboardController, 'index']).use(
-  middleware.auth({
-    guards: ['api'],
-  })
-)
 
 router
   .group(() => {
@@ -221,6 +215,19 @@ router
     router.get('/:id', [ReportTeacherController, 'show'])
   })
   .prefix('/report/teacher')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+
+// Dashboard Admin
+router
+  .group(() => {
+    router.get('/', [DashboardAdminController, 'index'])
+  })
+  .prefix('/dashboard/admin')
   .use(
     middleware.auth({
       guards: ['api'],

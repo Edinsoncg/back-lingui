@@ -59,7 +59,7 @@ export default class ClassroomSession extends BaseModel {
   @column()
   declare class_type_id: number
 
-  @column.dateTime()
+  @column()
   declare start_at: DateTime
 
   @column()
