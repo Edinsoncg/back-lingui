@@ -25,6 +25,9 @@ import ContractsController from '#controllers/contracts_controller'
 import StatusesController from '#controllers/statuses_controller'
 import MyProfileController from '#controllers/my_profile_controller'
 import MyProfilePasswordsController from '#controllers/my_profile_passwords_controller'
+import ReportStudentController from '#controllers/report_student_controller'
+import ReportClassroomController from '#controllers/report_classroom_controller'
+import ReportTeacherController from '#controllers/report_teacher_controller'
 
 router.get('/', async () => {
   return {
@@ -184,3 +187,42 @@ router.get('/status', [StatusesController, 'list']).use(
     guards: ['api'],
   })
 )
+
+// Reportes de estudiantes
+router
+  .group(() => {
+    router.get('/', [ReportStudentController, 'index'])
+    router.get('/:code', [ReportStudentController, 'show'])
+  })
+  .prefix('/report/student')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+// Reportes de salones
+router
+  .group(() => {
+    router.get('/', [ReportClassroomController, 'index'])
+    router.get('/:id', [ReportClassroomController, 'show'])
+  })
+  .prefix('/report/classroom')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+// Reportes de profesores
+router
+  .group(() => {
+    router.get('/', [ReportTeacherController, 'index'])
+    router.get('/:id', [ReportTeacherController, 'show'])
+  })
+  .prefix('/report/teacher')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )

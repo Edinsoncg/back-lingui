@@ -1,5 +1,8 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
+import Language from '#models/language'
+import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import User from '#models/user'
 
 export default class TeacherUserLanguage extends BaseModel {
   @column({ isPrimary: true })
@@ -10,6 +13,16 @@ export default class TeacherUserLanguage extends BaseModel {
 
   @column()
   declare language_id: number
+
+  @belongsTo(() => Language, {
+    foreignKey: 'language_id',
+  })
+  declare language: BelongsTo<typeof Language>
+
+  @belongsTo(() => User, {
+    foreignKey: 'user_id',
+  })
+  declare user: BelongsTo<typeof User>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
