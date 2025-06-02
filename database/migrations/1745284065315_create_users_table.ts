@@ -10,6 +10,7 @@ export default class extends BaseSchema {
       table.string('middle_name').nullable()
       table.string('first_last_name').notNullable()
       table.string('second_last_name').notNullable()
+      table.string('profile_picture').nullable()
       table
         .bigInteger('document_type_id')
         .notNullable()

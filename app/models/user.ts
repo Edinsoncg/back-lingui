@@ -30,6 +30,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare second_last_name: string
 
   @column()
+  declare profile_picture: string | null
+
+  @column()
   declare document_type_id: number
 
   @belongsTo(() => DocumentType, {
