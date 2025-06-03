@@ -60,10 +60,10 @@ export default class ClassroomSession extends BaseModel {
   declare class_type_id: number
 
   @column()
-  declare start_at: DateTime
+  declare start_at: Date
 
   @column()
-  declare end_at: DateTime
+  declare end_at: Date
 
   @column()
   declare duration: number

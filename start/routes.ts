@@ -28,6 +28,7 @@ import ReportStudentController from '#controllers/report_student_controller'
 import ReportClassroomController from '#controllers/report_classroom_controller'
 import ReportTeacherController from '#controllers/report_teacher_controller'
 import DashboardAdminController from '#controllers/dashboard_admin_controller'
+import ReceptionistDashboardController from '#controllers/dashboard_receptionist_controller'
 
 router.get('/', async () => {
   return {
@@ -233,3 +234,11 @@ router
       guards: ['api'],
     })
   )
+
+// Dashboard Receptionist
+router
+  .group(() => {
+    router.get('/', [ReceptionistDashboardController, 'index'])
+  })
+  .prefix('/dashboard/receptionist')
+  .use(middleware.auth({ guards: ['api'] }))
