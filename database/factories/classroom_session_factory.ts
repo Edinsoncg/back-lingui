@@ -51,9 +51,7 @@ export const ClassroomSessionFactory = factory
     return {
       classroom_id,
       modality_id: faker.number.int({ min: 1, max: 3 }),
-      level_id: faker.number.int({ min: 1, max: 6 }),
-      unit_id: faker.number.int({ min: 1, max: 18 }),
-      component_id: faker.number.int({ min: 1, max: 6 }),
+      unit_id: faker.number.int({ min: 1, max: 156 }),
       teacher_user_language_id: faker.number.int({ min: 1, max: 21 }),
       class_type_id: faker.number.int({ min: 1, max: 3 }),
       start_at: startAt,
