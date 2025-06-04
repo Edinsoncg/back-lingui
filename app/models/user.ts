@@ -1,12 +1,13 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo, hasOne } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import DocumentType from '#models/document_type'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import type { BelongsTo, HasOne } from '@adonisjs/lucid/types/relations'
 import Workday from '#models/workday'
+import TeacherUserLanguage from './teacher_user_language.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -59,6 +60,11 @@ export default class User extends compose(BaseModel, AuthFinder) {
     foreignKey: 'workday_id',
   })
   declare workday: BelongsTo<typeof Workday>
+
+  @hasOne(() => TeacherUserLanguage, {
+    foreignKey: 'user_id',
+  })
+  declare teacherProfile: HasOne<typeof TeacherUserLanguage>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
