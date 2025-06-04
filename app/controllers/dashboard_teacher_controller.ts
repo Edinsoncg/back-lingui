@@ -30,6 +30,16 @@ export default class DashboardTeacherController {
       level: session.unit?.level?.name,
     }))
 
+    // 📅 Total de clases del mes
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999)
+
+    const monthlyClassCount = await ClassroomSession.query()
+      .where('teacher_user_language_id', teacherId!)
+      .whereBetween('start_at', [startOfMonth, endOfMonth])
+      .count('* as total')
+      .first()
+
     // 📊 Gráfico de asistencias por día (últimos 7 días)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(today.getDate() - 6)
@@ -46,6 +56,7 @@ export default class DashboardTeacherController {
       .where('created_at', '>=', sevenDaysAgo.toISOString())
 
     const attendanceByDay: Record<string, number> = {}
+    let totalAttendance = 0
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(sevenDaysAgo)
@@ -59,12 +70,17 @@ export default class DashboardTeacherController {
       const key = created.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric' })
       if (attendanceByDay[key] !== undefined) {
         attendanceByDay[key]++
+        totalAttendance++
       }
     }
+
+    const avgWeeklyAttendance = +(totalAttendance / 7).toFixed(1)
 
     return response.ok({
       resumen: {
         today_classes: todayClasses.length,
+        total_classes_month: Number(monthlyClassCount?.$extras.total || 0),
+        avg_weekly_attendance: Math.round(avgWeeklyAttendance * 100),
       },
       graficos: {
         asistencia_por_dia: attendanceByDay,
