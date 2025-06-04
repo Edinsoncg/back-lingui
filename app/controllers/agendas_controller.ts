@@ -48,9 +48,7 @@ export default class AgendaController {
     const data = request.only([
       'classroom_id',
       'modality_id',
-      'level_id',
       'unit_id',
-      'component_id',
       'teacher_user_language_id',
       'class_type_id',
       'start_at',
@@ -71,9 +69,7 @@ export default class AgendaController {
     const data = request.only([
       'classroom_id',
       'modality_id',
-      'level_id',
       'unit_id',
-      'component_id',
       'teacher_user_language_id',
       'class_type_id',
       'start_at',

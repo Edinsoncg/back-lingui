@@ -31,6 +31,8 @@ import ReportTeacherController from '#controllers/report_teacher_controller'
 import ClasstypesController from '#controllers/class_types_controller'
 import UnitsController from '#controllers/units_controller'
 import LanguagesController from '#controllers/languages_controller'
+import TeachersController from '#controllers/teachers_controller'
+import ModalitiesController from '#controllers/modalities_controller'
 
 router.get('/', async () => {
   return {
@@ -200,6 +202,19 @@ router.get('/contract', [ContractsController, 'list']).use(
 
 //RUTA DE Status
 router.get('/status', [StatusesController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
+)
+
+//RUTA DE Status
+router.get('/teacher', [TeachersController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
+)
+
+router.get('/modality', [ModalitiesController, 'list']).use(
   middleware.auth({
     guards: ['api'],
   })

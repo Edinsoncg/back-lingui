@@ -3,7 +3,10 @@ import type { HttpContext } from '@adonisjs/core/http'
 
 export default class ClassroomsController {
   async list({ response }: HttpContext) {
-    const classroom = await Classroom.all()
+    const classroom = await Classroom.query().preload('house', (query) => {
+      query.select('id', 'name')
+    })
+
     return response.ok(classroom)
   }
   async get({ params, response }: HttpContext) {
