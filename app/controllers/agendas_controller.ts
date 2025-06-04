@@ -16,7 +16,10 @@ export default class AgendaController {
 
       const sessions = await ClassroomSession.query()
         .whereBetween('start_at', [startOfDay, endOfDay])
-        .preload('classroom')
+        .preload('classType')
+        .preload('classroom', (query) => {
+          query.preload('house')
+        })
         .preload('unit', (query) => {
           query.preload('level')
         })

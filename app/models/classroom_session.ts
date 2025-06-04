@@ -7,6 +7,7 @@ import Unit from '#models/unit'
 import Modality from '#models/modality'
 import TeacherUserLanguage from '#models/teacher_user_language'
 import Classroom from '#models/classroom'
+import ClassType from '#models/class_type'
 
 export default class ClassroomSession extends BaseModel {
   @column({ isPrimary: true })
@@ -55,6 +56,11 @@ export default class ClassroomSession extends BaseModel {
     foreignKey: 'teacher_user_language_id',
   })
   declare teacher: BelongsTo<typeof TeacherUserLanguage>
+
+  @belongsTo(() => ClassType, {
+    foreignKey: 'class_type_id',
+  })
+  declare classType: BelongsTo<typeof ClassType>
 
   @hasMany(() => StudentAttendance, {
     foreignKey: 'classroom_session_id',
