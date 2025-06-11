@@ -3,6 +3,11 @@
 import ClassroomSession from '#models/classroom_session'
 import type { HttpContext } from '@adonisjs/core/http'
 
+function formatToLocalISOString(date: Date): string {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 19) // "YYYY-MM-DDTHH:MM:SS"
+}
+
 export default class AgendaController {
   public async list({ request, response }: HttpContext) {
     const date = request.input('date')
@@ -11,8 +16,8 @@ export default class AgendaController {
     }
 
     try {
-      const startOfDay = new Date(`${date}T00:00:00.000Z`)
-      const endOfDay = new Date(`${date}T23:59:59.999Z`)
+      const startOfDay = new Date(`${date}T00:00:00`)
+      const endOfDay = new Date(`${date}T23:59:59`)
 
       const sessions = await ClassroomSession.query()
         .whereBetween('start_at', [startOfDay, endOfDay])
@@ -29,7 +34,16 @@ export default class AgendaController {
         })
         .preload('attendances')
 
-      return response.ok(sessions)
+      // Transforma las fechas
+      const result = sessions.map((session) => {
+        return {
+          ...session.toJSON(),
+          startAt: formatToLocalISOString(session.start_at),
+          endAt: formatToLocalISOString(session.end_at),
+        }
+      })
+
+      return response.ok(result)
     } catch (error) {
       console.error('AgendaController error:', error)
       return response.internalServerError({ message: 'Error al obtener sesiones' })
