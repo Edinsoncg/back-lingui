@@ -51,7 +51,22 @@ export default class AgendaController {
   }
 
   async get({ params, response }: HttpContext) {
-    const session = await ClassroomSession.find(params.id)
+    const session = await ClassroomSession.query()
+      .where('id', params.id)
+      .preload('classType')
+      .preload('classroom', (query) => {
+        query.preload('house')
+      })
+      .preload('unit', (query) => {
+        query.preload('level')
+      })
+      .preload('teacher', (query) => {
+        query.preload('user')
+        query.preload('language')
+      })
+      .preload('attendances')
+      .preload('modality')
+
     if (!session) {
       return response.notFound({ message: 'Classroom session not found' })
     }
