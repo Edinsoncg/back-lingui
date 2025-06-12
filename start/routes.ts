@@ -33,12 +33,7 @@ import UnitsController from '#controllers/units_controller'
 import LanguagesController from '#controllers/languages_controller'
 import TeachersController from '#controllers/teachers_controller'
 import ModalitiesController from '#controllers/modalities_controller'
-
-router.get('/', async () => {
-  return {
-    hello: 'world',
-  }
-})
+import StudentAttendanceController from '#controllers/student_attendances_controller'
 
 router.get('/dashboard', [DashboardController, 'index']).use(
   middleware.auth({
@@ -46,6 +41,7 @@ router.get('/dashboard', [DashboardController, 'index']).use(
   })
 )
 
+//RUTAS AGENDA
 router
   .group(() => {
     router.get('/', [AgendaController, 'list'])
@@ -55,6 +51,19 @@ router
     router.delete('/:id', [AgendaController, 'destroy'])
   })
   .prefix('/agenda')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+router
+  .group(() => {
+    router.get('/:classroom_session_id', [StudentAttendanceController, 'getStudentsInClass'])
+    router.post('/:classroom_session_id', [StudentAttendanceController, 'addStudentToClass'])
+    router.delete('/:classroom_session_id/:student_id', [StudentAttendanceController, 'removeStudentFromClass'])
+  })
+  .prefix('/agenda/students')
   .use(
     middleware.auth({
       guards: ['api'],
