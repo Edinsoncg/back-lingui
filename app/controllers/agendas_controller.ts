@@ -1,7 +1,7 @@
-// app/controllers/agenda_controller.ts
-
 import ClassroomSession from '#models/classroom_session'
 import type { HttpContext } from '@adonisjs/core/http'
+import { classroomSessionCreateSchema, classroomSessionUpdateSchema } from '#validators/agenda'
+import vine from '@vinejs/vine'
 
 function formatToLocalISOString(date: Date): string {
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -73,40 +73,97 @@ export default class AgendaController {
     return response.ok(session)
   }
 
-  async create({ request, response }: HttpContext) {
-    const data = request.only([
-      'classroom_id',
-      'modality_id',
-      'unit_id',
-      'teacher_user_language_id',
-      'class_type_id',
-      'start_at',
-      'end_at',
-      'duration',
-    ])
+  public async create({ request, response }: HttpContext) {
+    const payload = await vine.validate({
+      schema: classroomSessionCreateSchema,
+      data: request.all(),
+    })
 
-    const session = await ClassroomSession.create(data)
+    const startAt = new Date(payload.start_at)
+    const duration = payload.duration
+    const endAt = new Date(startAt.getTime() + duration * 60 * 60 * 1000)
+
+    if (startAt >= endAt) {
+      return response.badRequest({ message: 'La fecha de inicio debe ser anterior a la fecha de fin' })
+    }
+
+    const startHour = startAt.getHours()
+    const endHour = endAt.getHours()
+
+    if (startHour < 6 || startHour > 20) {
+      return response.badRequest({ message: 'La clase debe comenzar entre las 6:00 y las 20:00 horas' })
+    }
+
+    if (endHour < 7 || endHour > 21) {
+      return response.badRequest({ message: 'La clase debe terminar entre las 7:00 y las 21:00 horas' })
+    }
+
+    const overlapping = await ClassroomSession.query()
+      .where('classroom_id', payload.classroom_id)
+      .where((query) => {
+        query.where('start_at', '<', endAt).andWhere('end_at', '>', startAt)
+      })
+
+    if (overlapping.length > 0) {
+      return response.badRequest({ message: 'Ya existe una clase programada en ese horario para este salón' })
+    }
+
+    const session = await ClassroomSession.create({
+      ...payload,
+      start_at: startAt,
+      end_at: endAt,
+    })
+
     return response.created(session)
   }
 
-  async update({ params, request, response }: HttpContext) {
+  public async update({ params, request, response }: HttpContext) {
     const session = await ClassroomSession.find(params.id)
     if (!session) {
       return response.notFound({ message: 'Classroom session not found' })
     }
 
-    const data = request.only([
-      'classroom_id',
-      'modality_id',
-      'unit_id',
-      'teacher_user_language_id',
-      'class_type_id',
-      'start_at',
-      'end_at',
-      'duration',
-    ])
+    const payload = await vine.validate({
+      schema: classroomSessionUpdateSchema,
+      data: request.all(),
+    })
 
-    session.merge(data)
+    const startAt = payload.start_at ? new Date(payload.start_at) : session.start_at
+    const duration = payload.duration ?? session.duration
+    const endAt = new Date(startAt.getTime() + duration * 60 * 60 * 1000)
+
+    if (startAt >= endAt) {
+      return response.badRequest({ message: 'La fecha de inicio debe ser anterior a la fecha de fin' })
+    }
+
+    const startHour = startAt.getHours()
+    const endHour = endAt.getHours()
+
+    if (startHour < 6 || startHour > 21) {
+      return response.badRequest({ message: 'La clase debe comenzar entre las 6:00 y las 21:00 horas' })
+    }
+
+    if (endHour < 6 || endHour > 21) {
+      return response.badRequest({ message: 'La clase debe terminar entre las 6:00 y las 21:00 horas' })
+    }
+
+    const overlapping = await ClassroomSession.query()
+      .where('classroom_id', payload.classroom_id)
+      .whereNot('id', session.id)
+      .where((query) => {
+        query.where('start_at', '<', endAt).andWhere('end_at', '>', startAt)
+      })
+
+    if (overlapping.length > 0) {
+      return response.badRequest({ message: 'Ya existe una clase programada en ese horario para este salón' })
+    }
+
+    session.merge({
+      ...payload,
+      start_at: startAt,
+      end_at: endAt,
+      duration,
+    })
     await session.save()
 
     return response.ok(session)
