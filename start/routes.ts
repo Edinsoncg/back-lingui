@@ -28,6 +28,8 @@ import MyProfilePasswordsController from '#controllers/my_profile_passwords_cont
 import ReportStudentController from '#controllers/report_student_controller'
 import ReportClassroomController from '#controllers/report_classroom_controller'
 import ReportTeacherController from '#controllers/report_teacher_controller'
+import HousesController from '#controllers/houses_controller'
+import LanguagesController from '#controllers/languages_controller'
 
 router.get('/', async () => {
   return {
@@ -221,6 +223,56 @@ router
     router.get('/:id', [ReportTeacherController, 'show'])
   })
   .prefix('/report/teacher')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+// CRUDs de configuracion
+
+//CRUD configuracion de House
+router
+  .group(() => {
+    router.get('/', [HousesController, 'list'])
+    router.get('/:id', [HousesController, 'get'])
+    router.post('/', [HousesController, 'create'])
+    router.patch('/:id', [HousesController, 'update'])
+    router.delete('/:id', [HousesController, 'destroy'])
+  })
+  .prefix('/settings/houses')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+//CRUD configuracion de Classroom
+router
+  .group(() => {
+    router.get('/', [ClassroomsController, 'list'])
+    router.get('/:id', [ClassroomsController, 'get'])
+    router.post('/', [ClassroomsController, 'create'])
+    router.patch('/:id', [ClassroomsController, 'update'])
+    router.delete('/:id', [ClassroomsController, 'destroy'])
+  })
+  .prefix('/settings/classrooms')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+//CRUD configuracion de Language
+router
+  .group(() => {
+    router.get('/', [LanguagesController, 'list'])
+    router.get('/:id', [LanguagesController, 'get'])
+    router.post('/', [LanguagesController, 'create'])
+    router.patch('/:id', [LanguagesController, 'update'])
+    router.delete('/:id', [LanguagesController, 'destroy'])
+  })
+  .prefix('/settings/languages')
   .use(
     middleware.auth({
       guards: ['api'],
