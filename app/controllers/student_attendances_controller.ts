@@ -2,6 +2,7 @@ import { HttpContext } from '@adonisjs/core/http'
 import StudentAttendance from '#models/student_attendance'
 import ClassroomSession from '#models/classroom_session'
 import Student from '#models/student'
+import { addStudentToClassValidator } from '#validators/student_attendance'
 
 export default class StudentAttendanceController {
   // Obtener los estudiantes inscritos en una clase
@@ -48,39 +49,66 @@ export default class StudentAttendanceController {
 
   // Agregar un estudiante a la clase
   public async addStudentToClass({ params, request, response }: HttpContext) {
-    const { classroom_session_id } = params  // El ID de la clase desde la URL
-    const studentCode = request.input('student_code')  // El código del estudiante que se quiere agregar
-    // Buscar la clase en la base de datos
-    const classroomSession = await ClassroomSession.findOrFail(classroom_session_id)
-    // Verificar si el estudiante ya está inscrito en la clase
-    const attendanceExists = await StudentAttendance.query()
+    const { classroom_session_id } = params
+
+    // 1. Validación básica del schema
+    const payload = await request.validateUsing(addStudentToClassValidator)
+
+    // 2. Buscar sesión de clase con su salón
+    const classroomSession = await ClassroomSession.query()
+      .where('id', classroom_session_id)
+      .preload('classroom') // Aquí obtenemos la capacidad
+      .preload('attendances') // Para contar cuántos estudiantes hay
+      .firstOrFail()
+
+    const capacity = classroomSession.classroom.capacity
+    const currentCount = classroomSession.attendances.length
+
+    if (currentCount >= capacity) {
+      return response.badRequest({
+        message: `La clase ya alcanzó su capacidad máxima (${capacity} estudiantes).`,
+      })
+    }
+
+    // 3. Verificar si ya está inscrito
+    const alreadyEnrolled = await StudentAttendance.query()
       .where('classroom_session_id', classroom_session_id)
       .whereHas('student_contract', (query) => {
-        query.whereHas('student', (studentQuery) => studentQuery.where('student_code', studentCode))
+        query.whereHas('student', (sq) => {
+          sq.where('student_code', payload.student_code)
+        })
       })
       .first()
-    if (attendanceExists) {
-      return response.badRequest({ message: 'El estudiante ya está inscrito en esta clase.' })
+
+    if (alreadyEnrolled) {
+      return response.badRequest({
+        message: 'El estudiante ya está inscrito en esta clase.',
+      })
     }
-    // Buscar al estudiante por su código
-    const student = await Student.query().where('student_code', studentCode).first()
+
+    // 4. Buscar estudiante y contrato
+    const student = await Student.query().where('student_code', payload.student_code).first()
+
     if (!student) {
-      return response.notFound({ message: 'Estudiante no encontrado.' })
+      return response.badRequest({ message: 'El estudiante no existe.' })
     }
-    // Obtener el contrato activo del estudiante
-    const studentContract = await student
+
+    const contract = await student
       .related('contracts')
       .query()
-      .where('end_date', '>', new Date())  // Validar que el contrato esté activo
+      .where('end_date', '>', new Date())
       .first()
-    if (!studentContract) {
-      return response.badRequest({ message: 'El estudiante no tiene un contrato activo.' })
+
+    if (!contract) {
+      return response.badRequest({ message: 'El estudiante no tiene contrato activo.' })
     }
-    // Crear la relación de asistencia entre el estudiante y la clase
+
+    // 5. Crear asistencia
     const studentAttendance = await StudentAttendance.create({
-      student_contract_id: studentContract.id,
+      student_contract_id: contract.id,
       classroom_session_id: classroomSession.id,
     })
+
     return response.created(studentAttendance)
   }
 
