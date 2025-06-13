@@ -31,7 +31,6 @@ import DashboardAdminController from '#controllers/dashboard_admin_controller'
 import ReceptionistDashboardController from '#controllers/dashboard_receptionist_controller'
 import DashboardTeacherController from '#controllers/dashboard_teacher_controller'
 import DashboardStudentController from '#controllers/dashboard_student_controller'
-import DashboardDynamicController from '#controllers/dashboard_controller'
 
 router.get('/', async () => {
   return {
@@ -262,10 +261,4 @@ router
   .prefix('/dashboard/student')
   .use(middleware.auth({ guards: ['api'] }))
 
-// Dashboard Dynamic
-router
-  .group(() => {
-    router.get('/', [DashboardDynamicController, 'index'])
-  })
-  .prefix('/dashboard/dynamic')
-  .use(middleware.auth({ guards: ['api'] }))
+
