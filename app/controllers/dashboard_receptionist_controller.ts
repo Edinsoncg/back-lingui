@@ -31,7 +31,11 @@ export default class DashboardReceptionistController {
     fourMonthsAgo.setMonth(fourMonthsAgo.getMonth() - 3)
 
     const recentAttendances = await StudentAttendance.query()
-      .where('created_at', '>=', fourMonthsAgo.toISOString())
+      .whereHas('classroomSession', (query) => {
+        query.where('start_at', '>=', fourMonthsAgo.toISOString())
+      })
+      .preload('classroomSession')
+
 
     const attendanceByMonth: Record<string, number> = {
       Ene: 0, Feb: 0, Mar: 0, Abr: 0, May: 0, Jun: 0,
@@ -39,8 +43,8 @@ export default class DashboardReceptionistController {
     }
 
     for (const attendance of recentAttendances) {
-      const date = new Date(attendance.createdAt)
-      const month = date.toLocaleString('es-CO', { month: 'short' })
+      const sessionDate = new Date(attendance.classroomSession?.start_at || '')
+      const month = sessionDate.toLocaleString('es-CO', { month: 'short' })
       const key = month.charAt(0).toUpperCase() + month.slice(1, 3).toLowerCase()
       if (attendanceByMonth[key] !== undefined) {
         attendanceByMonth[key]++

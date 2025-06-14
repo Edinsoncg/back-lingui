@@ -53,7 +53,7 @@ export default class DashboardTeacherController {
 
     const recentAttendances = await StudentAttendance.query()
       .whereIn('classroom_session_id', sessionIds)
-      .where('created_at', '>=', sevenDaysAgo.toISOString())
+      .preload('classroomSession')
 
     // Gráfico por día
     const attendanceByDay: Record<string, number> = {}
@@ -65,8 +65,8 @@ export default class DashboardTeacherController {
     }
 
     for (const attendance of recentAttendances) {
-      const created = new Date(attendance.createdAt.toString())
-      const key = created.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric' })
+      const sessionDate = new Date(attendance.classroomSession?.start_at || '')
+      const key = sessionDate.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric' })
       if (attendanceByDay[key] !== undefined) {
         attendanceByDay[key]++
       }

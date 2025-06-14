@@ -41,12 +41,15 @@ export default class AdminDashboardController {
     // Obtener solo asistencias de esos últimos 4 meses
     const fourMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1)
     const recentAttendances = await StudentAttendance.query()
-      .where('created_at', '>=', fourMonthsAgo.toISOString())
+      .whereHas('classroomSession', (query) => {
+        query.where('start_at', '>=', fourMonthsAgo.toISOString())
+      })
+      .preload('classroomSession')
 
     // Contar asistencias por mes
     for (const attendance of recentAttendances) {
-      const date = new Date(attendance.createdAt)
-      const monthKey = date.toLocaleString('es-CO', { month: 'short' })
+      const sessionDate = new Date(attendance.classroomSession?.start_at || '')
+      const monthKey = sessionDate.toLocaleString('es-CO', { month: 'short' })
       if (attendance_by_month[monthKey] !== undefined) {
         attendance_by_month[monthKey]++
       }
