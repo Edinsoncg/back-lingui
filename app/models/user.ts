@@ -1,12 +1,15 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo, hasOne, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import DocumentType from '#models/document_type'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import type { BelongsTo, HasMany, HasOne, ManyToMany } from '@adonisjs/lucid/types/relations'
 import Workday from '#models/workday'
+import TeacherUserLanguage from './teacher_user_language.js'
+import UserRole from './user_role.js'
+import Role from '#models/role'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -40,6 +43,15 @@ export default class User extends compose(BaseModel, AuthFinder) {
   })
   declare documentType: BelongsTo<typeof DocumentType>
 
+  @manyToMany(() => Role, {
+  pivotTable: 'user_roles',
+  localKey: 'id', // user.id
+  pivotForeignKey: 'user_id',
+  relatedKey: 'id', // role.id
+  pivotRelatedForeignKey: 'role_id',
+})
+public roles: ManyToMany<typeof Role>
+
   @column()
   declare document_number: string
 
@@ -59,6 +71,11 @@ export default class User extends compose(BaseModel, AuthFinder) {
     foreignKey: 'workday_id',
   })
   declare workday: BelongsTo<typeof Workday>
+
+  @hasOne(() => TeacherUserLanguage, {
+    foreignKey: 'user_id',
+  })
+  declare teacherProfile: HasOne<typeof TeacherUserLanguage>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
