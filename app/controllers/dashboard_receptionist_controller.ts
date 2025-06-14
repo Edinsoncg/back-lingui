@@ -87,9 +87,9 @@ export default class DashboardReceptionistController {
 
     const todayClassesList = todaySessions.map((session) => {
       const startDate = new Date(session.start_at)
-      const hour = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      const time = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
       return {
-        hour,
+        time,
         classroom: session.classroom?.name,
         level: session.unit?.level?.name,
         teacher: `${session.teacher?.user?.first_name} ${session.teacher?.user?.first_last_name}`,
