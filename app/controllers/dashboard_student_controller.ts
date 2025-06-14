@@ -72,7 +72,7 @@ export default class DashboardStudentController {
 
       porcentajeAsistencia =
         clasesProgramadas.length > 0
-          ? Math.round((asistencias.length / clasesProgramadas.length) * 100)
+          ? Math.round((asistencias.length / clasesProgramadas.length) * 10)
           : 0
     }
 
