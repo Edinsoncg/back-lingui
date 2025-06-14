@@ -28,6 +28,8 @@ import MyProfilePasswordsController from '#controllers/my_profile_passwords_cont
 import ReportStudentController from '#controllers/report_student_controller'
 import ReportClassroomController from '#controllers/report_classroom_controller'
 import ReportTeacherController from '#controllers/report_teacher_controller'
+import ForgotPasswordController from '#controllers/forgot_passwords_controller'
+import ResetPasswordController from '#controllers/reset_passwords_controller'
 
 router.get('/', async () => {
   return {
@@ -226,3 +228,6 @@ router
       guards: ['api'],
     })
   )
+
+router.post('/forgot-password', [ForgotPasswordController, 'send'])
+router.post('/reset-password', [ResetPasswordController, 'handle'])
