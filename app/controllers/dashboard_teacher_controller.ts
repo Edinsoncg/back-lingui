@@ -6,8 +6,8 @@ import StudentAttendance from '#models/student_attendance'
 export default class DashboardTeacherController {
   public async index({ auth, response }: HttpContext) {
     const user = auth.user!
-    await auth.user?.load('teacherProfile')
-    const teacherId = auth.user?.teacherProfile?.id
+    await user.load('teacherProfile')
+    const teacherId = user.teacherProfile?.id
 
     const today = new Date()
     const startOfToday = new Date(today)
@@ -41,7 +41,7 @@ export default class DashboardTeacherController {
       .first()
 
     // 📊 Gráfico de asistencias por día (últimos 7 días)
-    const sevenDaysAgo = new Date()
+    const sevenDaysAgo = new Date(today)
     sevenDaysAgo.setDate(today.getDate() - 6)
     sevenDaysAgo.setHours(0, 0, 0, 0)
 
@@ -55,9 +55,8 @@ export default class DashboardTeacherController {
       .whereIn('classroom_session_id', sessionIds)
       .where('created_at', '>=', sevenDaysAgo.toISOString())
 
+    // Gráfico por día
     const attendanceByDay: Record<string, number> = {}
-    let totalAttendance = 0
-
     for (let i = 0; i < 7; i++) {
       const date = new Date(sevenDaysAgo)
       date.setDate(date.getDate() + i)
@@ -70,17 +69,20 @@ export default class DashboardTeacherController {
       const key = created.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric' })
       if (attendanceByDay[key] !== undefined) {
         attendanceByDay[key]++
-        totalAttendance++
       }
     }
 
-    const avgWeeklyAttendance = +(totalAttendance / 7).toFixed(1)
+    // 🔹 Estudiantes únicos que asistieron en la semana
+    const uniqueStudentsThisWeek = new Set(
+      recentAttendances.map((a) => a.student_contract_id)
+    ).size
 
     return response.ok({
       resumen: {
         today_classes: todayClasses.length,
         total_classes_month: Number(monthlyClassCount?.$extras.total || 0),
-        avg_weekly_attendance: Math.round(avgWeeklyAttendance * 100),
+        total_students_this_week: uniqueStudentsThisWeek,
+        current_month: today.toLocaleString('es-CO', { month: 'long' }).toUpperCase()
       },
       graficos: {
         asistencia_por_dia: attendanceByDay,

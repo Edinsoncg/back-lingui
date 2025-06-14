@@ -10,13 +10,23 @@ import type { HttpContext } from '@adonisjs/core/http'
 export default class AdminDashboardController {
   async index({ response }: HttpContext) {
     const now = new Date()
-    const todayISO = now.toISOString().split('T')[0] // yyyy-mm-dd
+
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+
+    const endOfDay = new Date()
+    endOfDay.setHours(23, 59, 59, 999)
 
     // --- Totales ---
-    const totalStudents = await Student.query().where('status_id', 1)
-    const totalTeachers = await TeacherUserLanguage.query()
-    const totalContracts = await StudentContract.query()
-    const todayClasses = await ClassroomSession.query().whereRaw('DATE(start_at) = ?', [todayISO])
+    const [totalStudents, totalTeachers, totalContracts] = await Promise.all([
+      Student.query().where('status_id', 1),
+      TeacherUserLanguage.query(),
+      StudentContract.query(),
+    ])
+
+    const todayClasses = await ClassroomSession.query()
+      .where('start_at', '>=', startOfDay)
+      .andWhere('start_at', '<=', endOfDay)
 
     // --- Gráfico: asistencia mensual ---
     const attendance_by_month: Record<string, number> = {}
@@ -24,7 +34,7 @@ export default class AdminDashboardController {
     // Generar los últimos 4 meses (incluyendo el actual)
     for (let i = 3; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const key = date.toLocaleString('default', { month: 'short' }) // ej. "Mar"
+      const key = date.toLocaleString('es-CO', { month: 'short' })
       attendance_by_month[key] = 0
     }
 
@@ -35,8 +45,8 @@ export default class AdminDashboardController {
 
     // Contar asistencias por mes
     for (const attendance of recentAttendances) {
-      const date = new Date(attendance.createdAt.toISO())
-      const monthKey = date.toLocaleString('default', { month: 'short' })
+      const date = new Date(attendance.createdAt)
+      const monthKey = date.toLocaleString('es-CO', { month: 'short' })
       if (attendance_by_month[monthKey] !== undefined) {
         attendance_by_month[monthKey]++
       }
@@ -69,15 +79,35 @@ export default class AdminDashboardController {
       .preload('contract')
       .preload('student', (q) => q.preload('user'))
 
+    // Lista de clases programadas hoy
+    const todaySessions = await ClassroomSession.query()
+      .where('start_at', '>=', startOfDay)
+      .andWhere('start_at', '<=', endOfDay)
+      .preload('classroom')
+      .preload('unit', (q) => q.preload('level'))
+      .preload('teacher', (q) => q.preload('user').preload('language'))
+
+    const todayClassesList = todaySessions.map((session) => {
+      const startDate = new Date(session.start_at)
+      const time = startDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      return {
+        time,
+        classroom: session.classroom?.name,
+        level: session.unit?.level?.name,
+        teacher: `${session.teacher?.user?.first_name} ${session.teacher?.user?.first_last_name}`,
+      }
+    })
+
     return response.ok({
       resumen: {
         total_students: totalStudents.length,
         total_teachers: totalTeachers.length,
         total_contracts: totalContracts.length,
         today_classes: todayClasses.length,
+        clases_hoy: todayClassesList,
       },
       graficos: {
-        attendance_by_month: attendance_by_month,
+        attendance_by_month,
         students_by_level: studentsByLevel,
       },
       notificaciones: {
