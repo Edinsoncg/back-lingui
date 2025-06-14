@@ -294,3 +294,35 @@ router
       guards: ['api'],
     })
   )
+
+//CRUD configuracion de Document type
+router
+  .group(() => {
+    router.get('/', [DocumentTypeController, 'list'])
+    router.get('/:id', [DocumentTypeController, 'get'])
+    router.post('/', [DocumentTypeController, 'create'])
+    router.patch('/:id', [DocumentTypeController, 'update'])
+    router.delete('/:id', [DocumentTypeController, 'destroy'])
+  })
+  .prefix('/settings/document-types')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+// Rutas para Status (Estado)
+router
+  .group(() => {
+    router.get('/', [StatusesController, 'list'])
+    router.post('/', [StatusesController, 'create'])
+    router.get('/:id', [StatusesController, 'get'])
+    router.patch('/:id', [StatusesController, 'update'])
+    router.delete('/:id', [StatusesController, 'destroy'])
+  })
+  .prefix('/settings/status')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
