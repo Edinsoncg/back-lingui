@@ -58,8 +58,9 @@ export default class ReportClassroomController {
     const sesiones = await ClassroomSession.query()
       .where('classroom_id', classroomId)
       .orderBy('start_at', 'desc')
-      .preload('unit')
-      .preload('level')
+      .preload('unit', (unitQuery) => {
+        unitQuery.preload('level')
+      })
       .preload('modality')
       .preload('teacher', (query) => {
         query.preload('language').preload('user')
@@ -68,7 +69,7 @@ export default class ReportClassroomController {
     const clases = sesiones.map((clase) => ({
       id: clase.id,
       fecha: clase.start_at.toISOString().split('T')[0],
-      nivel: clase.level?.name || 'N/A',
+      nivel: clase.unit?.level?.name || 'N/A',
       unidad: clase.unit?.name || 'N/A',
       modalidad: clase.modality?.kind || 'N/A',
       idioma: clase.teacher?.language?.name || 'N/A',
