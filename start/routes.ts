@@ -278,3 +278,19 @@ router
       guards: ['api'],
     })
   )
+
+//CRUD configuracion de Role
+router
+  .group(() => {
+    router.get('/', [RoleController, 'list'])
+    router.get('/:id', [RoleController, 'get'])
+    router.post('/', [RoleController, 'create'])
+    router.patch('/:id', [RoleController, 'update'])
+    router.delete('/:id', [RoleController, 'destroy'])
+  })
+  .prefix('/settings/roles')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
