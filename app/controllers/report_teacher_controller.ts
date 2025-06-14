@@ -76,7 +76,7 @@ export default class ReportTeacherController {
 
     const clases = sesiones.map((clase) => ({
       id: clase.id,
-      fecha: clase.start_at.toISODate(),
+      fecha: clase.start_at.toISOString().split('T')[0],
       nivel: clase.level?.name || 'N/A',
       unidad: clase.unit?.name || 'N/A',
       modalidad: clase.modality?.kind || 'N/A',
@@ -95,7 +95,7 @@ export default class ReportTeacherController {
         correo: teacher.user.email,
         telefono: teacher.user.phone_number,
         idioma: teacher.language?.name || 'N/A',
-        jornada: teacher.user.workday?.name || 'N/A',
+        jornada: teacher.user.workday?.journal || 'N/A',
       },
       clases,
     })
