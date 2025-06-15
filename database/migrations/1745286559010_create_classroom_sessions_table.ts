@@ -21,25 +21,11 @@ export default class extends BaseSchema {
         .inTable('modalities')
         .onDelete('CASCADE')
       table
-        .bigInteger('level_id')
-        .notNullable()
-        .unsigned()
-        .references('id')
-        .inTable('levels')
-        .onDelete('CASCADE')
-      table
         .bigInteger('unit_id')
         .notNullable()
         .unsigned()
         .references('id')
         .inTable('units')
-        .onDelete('CASCADE')
-      table
-        .bigInteger('component_id')
-        .notNullable()
-        .unsigned()
-        .references('id')
-        .inTable('components')
         .onDelete('CASCADE')
       table
         .bigInteger('teacher_user_language_id')

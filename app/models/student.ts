@@ -6,6 +6,7 @@ import StudentContract from '#models/student_contract'
 import StudentAttendance from '#models/student_attendance'
 import Status from '#models/status'
 import StudentLanguage from '#models/student_language'
+import StudentLevel from '#models/student_level'
 
 export default class Student extends BaseModel {
   @column({ isPrimary: true })
@@ -44,6 +45,11 @@ export default class Student extends BaseModel {
     foreignKey: 'student_id',
   })
   declare studentLanguages: HasMany<typeof StudentLanguage>
+
+  @hasMany(() => StudentLevel, {
+    foreignKey: 'student_id',
+  })
+  declare studentLevels: HasMany<typeof StudentLevel>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

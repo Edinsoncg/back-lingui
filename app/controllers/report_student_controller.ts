@@ -47,12 +47,13 @@ export default class ReportStudentController {
             })
           })
           .orderBy('start_at', 'desc')
-          .preload('unit')
-          .preload('level')
+          .preload('unit', (unitQuery) => {
+            unitQuery.preload('level')
+          })
           .first()
 
         const unidad = ultimaClase?.unit?.name || 'N/A'
-        const nivel = ultimaClase?.level?.name || 'N/A'
+        const nivel = ultimaClase?.unit?.level?.name || 'N/A'
 
         const idioma = student.studentLanguages?.[0]?.language?.name || 'N/A'
 
@@ -93,8 +94,9 @@ export default class ReportStudentController {
           .preload('attendances', (att) =>
             att.preload('classroomSession', (session) => {
               session
-                .preload('level')
-                .preload('unit')
+                .preload('unit', (unitQuery) => {
+                  unitQuery.preload('level')
+                })
                 .preload('modality') // si la relación existe
             })
           )
@@ -115,16 +117,17 @@ export default class ReportStudentController {
     const apellido = [student.user.first_last_name, student.user.second_last_name].filter(Boolean).join(' ')
 
     const clases = contratoActivo?.attendances.map((asistencia) => {
-    const clase = asistencia.classroomSession
-    return {
-      id: clase.id,
-      fecha: new Date(clase.start_at).toISOString().split('T')[0],
-      nivel: clase.level?.name || 'N/A',
-      unidad: clase.unit?.name || 'N/A',
-      modalidad: clase.modality?.kind || 'N/A',
-      duracion: clase.duration,
-      asistio: true,
-    }}) || []
+        const clase = asistencia.classroomSession
+         return {
+          id: clase.id,
+          fecha: new Date(clase.start_at).toISOString().split('T')[0],
+          nivel: clase.unit?.level?.name || 'N/A',
+          unidad: clase.unit?.name || 'N/A',
+          modalidad: clase.modality?.kind || 'N/A',
+          duracion: clase.duration,
+          asistio: true,
+        }
+      }) || []
 
     return response.ok({
       estudiante: {
