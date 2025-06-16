@@ -30,14 +30,11 @@ export const studentExtendedValidator = vine.compile(
 
     start_date: vine.date(), // validará que sea una fecha válida
 
-    language_ids: vine.array(
-      vine
-        .number()
-        .positive()
-        .exists(async (db, value) => {
-          const exists = await db.from('languages').where('id', value).first()
-          return !!exists
-        })
-    ),
+    language_id: vine
+      .number()
+      .positive()
+      .exists(async (db, value) => {
+        return await db.from('languages').where('id', value).first()
+      }),
   })
 )

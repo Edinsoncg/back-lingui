@@ -33,16 +33,18 @@ export default class StudentExtendedController {
       .preload('contract')
       .first()
 
+    const language = student.languages[0]
+
     return {
       student_code: student.student_code,
       status: {
         id: student.status_id,
         name: student.status?.name,
       },
-      languages: student.languages.map((language) => ({
-        id: language.id,
-        name: language.name,
-      })),
+      language: {
+        id: language?.id,
+        name: language?.name,
+      },
       level: {
         id: unit?.unit?.level_id,
         name: unit?.unit?.level?.name,
@@ -69,7 +71,7 @@ export default class StudentExtendedController {
       unit_id,
       contract_id,
       start_date,
-      language_ids,
+      language_id,
     } = await request.validateUsing(studentExtendedValidator)
 
     // 1. Obtener o crear estudiante
@@ -86,16 +88,12 @@ export default class StudentExtendedController {
       await student.save()
     }
 
-    // Actualizar idiomas
-    if (language_ids?.length) {
-      await StudentLanguage.query().where('student_id', student.id).delete()
-      for (const languageId of language_ids) {
-        await StudentLanguage.create({
-          student_id: student.id,
-          language_id: languageId,
-        })
-      }
-    }
+    // Actualizar idioma
+    await StudentLanguage.query().where('student_id', student.id).delete()
+    await StudentLanguage.create({
+      student_id: student.id,
+      language_id,
+    })
 
     // 2. Obtener el level_id desde la unidad
     const unit = await Unit.findOrFail(unit_id)
