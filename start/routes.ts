@@ -30,6 +30,7 @@ import LanguagesController from '#controllers/languages_controller'
 import TeachersController from '#controllers/teachers_controller'
 import ModalitiesController from '#controllers/modalities_controller'
 import StudentAttendanceController from '#controllers/student_attendances_controller'
+import StudentExtendedController from '#controllers/student_extended_controller'
 
 //RUTAS AGENDA
 router
@@ -306,3 +307,16 @@ router.get('/classtypes', [ClasstypesController, 'index']).use(
     guards: ['api'],
   })
 )
+
+//Ruta de estudiantes extendida
+router
+  .group(() => {
+    router.get('/:id', [StudentExtendedController, 'show'])
+    router.patch('/:id', [StudentExtendedController, 'update'])
+  })
+  .prefix('/student/extended')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
