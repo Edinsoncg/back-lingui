@@ -65,7 +65,7 @@ export default class UserController {
     } = payload
 
     const isOnlyStudent = role_ids.length === 1 && role_ids.includes(4)
-    if (isOnlyStudent && workday_id !== null) {
+    if (isOnlyStudent && workday_id != null) {
       return response.badRequest({
         message: 'Los estudiantes no deben tener jornada (workday) asignada.',
       })

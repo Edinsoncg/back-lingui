@@ -4,10 +4,9 @@ import StudentContract from '#models/student_contract'
 import StudentUnit from '#models/student_unit'
 import { studentExtendedValidator } from '#validators/student_extended'
 import Contract from '#models/contract'
-import UnitComponent from '#models/unit_component'
-import StudentProgress from '#models/student_progress'
 import StudentLevel from '#models/student_level'
 import Unit from '#models/unit'
+import StudentLanguage from '#models/student_language'
 
 export default class StudentExtendedController {
   // Obtener info extendida del estudiante
@@ -17,6 +16,7 @@ export default class StudentExtendedController {
     const student = await Student.query()
       .where('user_id', userId)
       .preload('status')
+      .preload('languages')
       .first()
 
     if (!student) return response.notFound({ message: 'Estudiante no encontrado' })
@@ -39,6 +39,10 @@ export default class StudentExtendedController {
         id: student.status_id,
         name: student.status?.name,
       },
+      languages: student.languages.map((language) => ({
+        id: language.id,
+        name: language.name,
+      })),
       level: {
         id: unit?.unit?.level_id,
         name: unit?.unit?.level?.name,
@@ -65,6 +69,7 @@ export default class StudentExtendedController {
       unit_id,
       contract_id,
       start_date,
+      language_ids,
     } = await request.validateUsing(studentExtendedValidator)
 
     // 1. Obtener o crear estudiante
@@ -79,6 +84,17 @@ export default class StudentExtendedController {
       student.student_code = student_code
       student.status_id = status_id
       await student.save()
+    }
+
+    // Actualizar idiomas
+    if (language_ids?.length) {
+      await StudentLanguage.query().where('student_id', student.id).delete()
+      for (const languageId of language_ids) {
+        await StudentLanguage.create({
+          student_id: student.id,
+          language_id: languageId,
+        })
+      }
     }
 
     // 2. Obtener el level_id desde la unidad
@@ -117,6 +133,6 @@ export default class StudentExtendedController {
       end_date: endDate,
     })
 
-    return response.ok({ message: 'Datos del estudiante guardados correctamente.' })
+    return response.ok({ message: 'Student data saved correctly' })
   }
 }
