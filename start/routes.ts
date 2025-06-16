@@ -31,6 +31,7 @@ import TeachersController from '#controllers/teachers_controller'
 import ModalitiesController from '#controllers/modalities_controller'
 import StudentAttendanceController from '#controllers/student_attendances_controller'
 import StudentExtendedController from '#controllers/student_extended_controller'
+import InactiveUsersController from '#controllers/inactive_users_controller'
 
 //RUTAS AGENDA
 router
@@ -315,6 +316,20 @@ router
     router.patch('/:id', [StudentExtendedController, 'update'])
   })
   .prefix('/student/extended')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+//Rutas de usuarios inactivos
+router
+  .group(() => {
+    router.get('/', [InactiveUsersController, 'list'])
+    router.patch('/restore/:id', [InactiveUsersController, 'restore'])
+    router.delete('/force/:id', [InactiveUsersController, 'destroy'])
+  })
+  .prefix('/setting/inactive-user')
   .use(
     middleware.auth({
       guards: ['api'],

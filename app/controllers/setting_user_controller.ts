@@ -11,22 +11,22 @@ export default class UserController {
     const limit = request.input('limit', 10)
     const search = request.input('search')
 
-    const query = UserRole.query()
-      .preload('user', (userQuery) => {
-        userQuery.preload('documentType').preload('workday')
+    const queryUser = User.query()
+      .where('is_active', true)
+      .preload('documentType')
+      .preload('workday')
+      .preload('roles')
+      .if(search, (query) => {
+        query.where((builder) =>
+          builder
+            .whereILike('first_name', `%${search}%`)
+            .orWhereILike('first_last_name', `%${search}%`)
+            .orWhereILike('email', `%${search}%`)
+        )
       })
-      .preload('role')
+      .orderBy('id', 'asc')
 
-    if (search) {
-      query.whereHas('user', (userQuery) => {
-        userQuery
-          .whereILike('first_name', `%${search}%`)
-          .orWhereILike('first_last_name', `%${search}%`)
-          .orWhereILike('email', `%${search}%`)
-      })
-    }
-
-    const paginator = await query.paginate(page, limit)
+    const paginator = await queryUser.paginate(page, limit)
 
     return response.ok({
       data: paginator.all(),
@@ -35,22 +35,39 @@ export default class UserController {
   }
 
   public async get({ params, response }: HttpContext) {
-    const userRole = await UserRole.query()
-      .where('user_id', params.id)
-      .preload('user', (userQuery) => {
-        userQuery.preload('documentType').preload('workday')
-      })
-      .preload('role')
+    const user = await User.query()
+      .where('id', params.id)
+      .preload('documentType')
+      .preload('workday')
+      .preload('roles') // Trae los roles como array
       .first()
 
-    if (!userRole) {
-      return response.notFound({ message: 'User not found or role not assigned' })
+    if (!user) {
+      return response.notFound({ message: 'Usuario no encontrado' })
+    }
+
+    // Extraer IDs y nombres de roles
+    const role_ids = user.roles.map((r) => r.id)
+    const roles = user.roles.map((r) => ({ id: r.id, name: r.name }))
+
+    // Cargar idiomas si el usuario tiene rol de profesor (id: 3)
+    let languages: { id: number; name: string }[] = []
+    if (role_ids.includes(3)) {
+      const teacherLangs = await TeacherUserLanguage.query()
+        .where('user_id', user.id)
+        .preload('language')
+
+      languages = teacherLangs.map((tl) => ({
+        id: tl.language.id,
+        name: tl.language.name,
+      }))
     }
 
     return response.ok({
-      ...userRole.user.serialize(),
-      role: userRole.role!.name,
-      role_id: userRole.role_id,
+      ...user.serialize(),
+      roles,
+      languages,
+      workday: user.workday?.journal ?? null,
     })
   }
 
@@ -205,9 +222,9 @@ export default class UserController {
       return response.notFound({ message: 'User not found' })
     }
 
-    await UserRole.query().where('user_id', user.id).delete()
-    await user.delete()
+    user.is_active = false
+    await user.save()
 
-    return response.ok({ message: 'User deleted successfully' })
+    return response.ok({ message: 'User deactivated successfully' })
   }
 }
