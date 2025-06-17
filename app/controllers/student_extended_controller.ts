@@ -29,7 +29,7 @@ export default class StudentExtendedController {
 
     const contract = await StudentContract.query()
       .where('student_id', student.id)
-      .orderBy('start_date', 'desc')
+      .andWhere('is_current', true)
       .preload('contract')
       .first()
 
@@ -124,11 +124,15 @@ export default class StudentExtendedController {
     const endDate = new Date(startDateObj)
     endDate.setMonth(endDate.getMonth() + monthsToAdd)
 
+    // 6. Registrar nuevo contrato y marcar como actual (desactivar anteriores)
+    await StudentContract.query().where('student_id', student.id).update({ is_current: false })
+
     await StudentContract.create({
       student_id: student.id,
       contract_id,
       start_date: startDateObj,
       end_date: endDate,
+      is_current: true,
     })
 
     return response.ok({ message: 'Student data saved correctly' })

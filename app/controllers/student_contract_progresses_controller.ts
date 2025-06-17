@@ -114,7 +114,8 @@ export default class StudentContractProgressesController {
     }
 
     if (new_start_date) {
-      const newStartDate = new Date(new_start_date)
+      const [year, month, day] = new_start_date.split('-').map(Number)
+      const newStartDate = new Date(year, month - 1, day) // ← Meses en JS van de 0 a 11
       currentContract.start_date = newStartDate
 
       // Usamos el contrato actualizado para obtener los meses correctos
