@@ -279,22 +279,6 @@ router
     })
   )
 
-//CRUD configuracion de Role
-router
-  .group(() => {
-    router.get('/', [RoleController, 'list'])
-    router.get('/:id', [RoleController, 'get'])
-    router.post('/', [RoleController, 'create'])
-    router.patch('/:id', [RoleController, 'update'])
-    router.delete('/:id', [RoleController, 'destroy'])
-  })
-  .prefix('/settings/roles')
-  .use(
-    middleware.auth({
-      guards: ['api'],
-    })
-  )
-
 //CRUD configuracion de Document type
 router
   .group(() => {
@@ -311,7 +295,7 @@ router
     })
   )
 
-// Rutas para Status (Estado)
+//CRUD configuracion de Status
 router
   .group(() => {
     router.get('/', [StatusesController, 'list'])
