@@ -1,31 +1,21 @@
+import { updatePasswordValidator } from '#validators/profile_password'
 import type { HttpContext } from '@adonisjs/core/http'
 import hash from '@adonisjs/core/services/hash'
 
 export default class MyProfilePasswordsController {
   public async update({ request, auth, response }: HttpContext) {
     const user = auth.user!
+    const { current_password, new_password } = await request.validateUsing(updatePasswordValidator)
 
-    const currentPassword = request.input('current_password')
-    const newPassword = request.input('new_password')
-    const confirmPassword = request.input('confirm_password')
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      return response.badRequest({ message: 'Todos los campos son obligatorios.' })
-    }
-
-    if (newPassword !== confirmPassword) {
-      return response.badRequest({ message: 'Las nuevas contraseñas no coinciden.' })
-    }
-
-    const isValid = await hash.verify(user.password, currentPassword)
+    const isValid = await hash.verify(user.password, current_password)
 
     if (!isValid) {
-      return response.unauthorized({ message: 'La contraseña actual es incorrecta.' })
+      return response.unauthorized({ message: 'Current password is incorrect.' })
     }
 
-    user.password = newPassword
+    user.password = new_password
     await user.save()
 
-    return response.ok({ message: 'Contraseña actualizada correctamente.' })
+    return response.ok({ message: 'Password updated successfully.' })
   }
 }

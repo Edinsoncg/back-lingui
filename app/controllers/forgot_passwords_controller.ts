@@ -1,16 +1,16 @@
-// app/controllers/forgot_passwords_controller.ts
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import jwt from 'jsonwebtoken'
 import MailService from '#services/MailService'
+import { forgotPasswordValidator } from '#validators/forgot_password'
 
 export default class ForgotPasswordsController {
   public async send({ request, response }: HttpContext) {
-    const email = request.input('email')
-    const user = await User.findBy('email', email)
+    const { email } = await request.validateUsing(forgotPasswordValidator)
 
+    const user = await User.findBy('email', email)
     if (!user) {
-      return response.badRequest({ message: 'El correo no está registrado.' })
+      return response.badRequest({ message: 'Email is not registered.' })
     }
 
     const token = jwt.sign(
@@ -21,14 +21,14 @@ export default class ForgotPasswordsController {
 
     const resetLink = `http://localhost:5173/newpassword?token=${token}`
     const html = `
-      <p>Hola ${user.first_name},</p>
-      <p>Hemos recibido una solicitud para restablecer tu contraseña.</p>
-      <p><a href="${resetLink}">Haz clic aquí para restablecer tu contraseña</a></p>
-      <p>Si no solicitaste esto, puedes ignorar este mensaje.</p>
+      <p>Hello ${user.first_name},</p>
+      <p>We received a request to reset your password.</p>
+      <p><a href="${resetLink}">Click here to reset your password</a></p>
+      <p>If you didn't request this, you can safely ignore this email.</p>
     `
 
-    await MailService.send(email, 'Recuperación de contraseña', html)
+    await MailService.send(email, 'Password recovery', html)
 
-    return response.ok({ message: 'Se ha enviado el correo de recuperación.' })
+    return response.ok({ message: 'Recovery email sent successfully.' })
   }
 }
