@@ -11,7 +11,6 @@ export default class extends BaseSchema {
       table.string('icon').notNullable()
       table
         .bigInteger('item_id')
-        .notNullable()
         .unsigned()
         .references('id')
         .inTable('items')

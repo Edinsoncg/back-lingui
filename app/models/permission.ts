@@ -8,6 +8,15 @@ export default class Permission extends BaseModel {
   @column()
   declare name: string
 
+  @column()
+  declare label: string
+
+  @column()
+  declare icon: string
+
+  @column({ columnName: 'icon_color' }) // si usas snake_case en BD
+  declare iconColor: string
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

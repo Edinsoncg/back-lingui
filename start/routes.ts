@@ -32,6 +32,7 @@ import ModalitiesController from '#controllers/modalities_controller'
 import StudentAttendanceController from '#controllers/student_attendances_controller'
 import StudentExtendedController from '#controllers/student_extended_controller'
 import InactiveUsersController from '#controllers/inactive_users_controller'
+import RolePermissionItem from '#controllers/role_permission_items_controller'
 
 //RUTAS AGENDA
 router
@@ -330,6 +331,21 @@ router
     router.delete('/force/:id', [InactiveUsersController, 'destroy'])
   })
   .prefix('/setting/inactive-user')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+// Rutas roles_permission_items
+router
+  .group(() => {
+    router.post('/assign', [RolePermissionItem, 'assign'])
+    router.post('/remove', [RolePermissionItem, 'remove'])
+    router.get('/:role_id/:item_id', [RolePermissionItem, 'show'])
+    router.patch('/update', [RolePermissionItem, 'update'])
+    router.get('/', [RolePermissionItem, 'list'])
+  })
+  .prefix('/role-permission-item')
   .use(
     middleware.auth({
       guards: ['api'],
