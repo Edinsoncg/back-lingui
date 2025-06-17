@@ -20,6 +20,7 @@ export default class extends BaseSchema {
         .references('id')
         .inTable('contracts')
         .onDelete('CASCADE')
+      table.boolean('is_current').notNullable().defaultTo(false)
       table.date('start_date').notNullable()
       table.date('end_date').notNullable()
       table.timestamp('created_at').notNullable()

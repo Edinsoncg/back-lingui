@@ -22,6 +22,9 @@ export default class StudentContract extends BaseModel {
   @column()
   declare end_date: DateTime
 
+  @column()
+  declare is_current: boolean
+
   @belongsTo(() => Student, {
     foreignKey: 'student_id',
   })
