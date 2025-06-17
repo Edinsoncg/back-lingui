@@ -22,7 +22,7 @@ export default class InactiveUsersController {
             .orWhereILike('email', `%${search}%`)
         )
       })
-      .orderBy('id', 'asc')
+      .orderBy('created_at', 'desc')
 
     const paginator = await queryUser.paginate(page, limit)
 
