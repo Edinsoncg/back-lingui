@@ -1,7 +1,5 @@
-// start/controllers/menu_controller.ts
 import type { HttpContext } from '@adonisjs/core/http'
 import RolePermissionItem from '#models/role_permission_item'
-import Permission from '#models/permission'
 import Item from '#models/item'
 import UserRole from '#models/user_role'
 
@@ -11,18 +9,18 @@ export default class MenuController {
       const user = auth.user!
       const userId = user.id
 
-      // 1. Obtener los roles del usuario
+      // 1. Roles del usuario
       const userRoles = await UserRole.query().where('user_id', userId)
       const roleIds = userRoles.map((r) => r.role_id)
 
-      // 2. Obtener las relaciones rol-permiso-ítem
+      // 2. Permisos por rol
       const rolePermissions = await RolePermissionItem
         .query()
         .whereIn('role_id', roleIds)
         .preload('item')
         .preload('permission')
 
-      // 3. Construir un mapa de ítems con los permisos asociados
+      // 3. Mapear ítems con permisos
       const menu: Record<number, {
         item: {
           id: number
@@ -34,10 +32,13 @@ export default class MenuController {
         permissions: string[]
       }> = {}
 
+      const parentIds = new Set<number>()
+
       for (const rp of rolePermissions) {
         const item = rp.item
         const permission = rp.permission.name
 
+        // Agregar ítem al menú
         if (!menu[item.id]) {
           menu[item.id] = {
             item: {
@@ -54,9 +55,34 @@ export default class MenuController {
         if (!menu[item.id].permissions.includes(permission)) {
           menu[item.id].permissions.push(permission)
         }
+
+        // Registrar padres
+        if (item.item_id) {
+          parentIds.add(item.item_id)
+        }
       }
 
-      // 4. Retornar el menú como array
+      // 4. Incluir ítems padres (si no tienen permisos, pero tienen hijos con permisos)
+      const existingItemIds = Object.keys(menu).map(Number)
+      const missingParentIds = Array.from(parentIds).filter((pid) => !existingItemIds.includes(pid))
+
+      if (missingParentIds.length > 0) {
+        const parentItems = await Item.findMany(missingParentIds)
+
+        for (const parent of parentItems) {
+          menu[parent.id] = {
+            item: {
+              id: parent.id,
+              name: parent.name,
+              url: parent.url,
+              icon: parent.icon,
+              parent_id: parent.item_id,
+            },
+            permissions: [], // los padres no necesitan permisos directos
+          }
+        }
+      }
+
       return response.ok(Object.values(menu))
     } catch (error) {
       console.error('Error en MenuController:', error)
