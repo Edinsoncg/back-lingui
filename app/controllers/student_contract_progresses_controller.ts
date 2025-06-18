@@ -74,6 +74,7 @@ export default class StudentContractProgressesController {
         id: student.id,
         code: student.student_code,
         full_name: `${student.user.first_name} ${student.user.first_last_name}`,
+        profile_picture: student.user?.profile_picture || null,
         status: student.status,
         contract: contractType,
         contracts: student.contracts,

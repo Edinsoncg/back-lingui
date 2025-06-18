@@ -91,6 +91,7 @@ export default class StudentAcademyProgressesController {
       student: {
         code: student.student_code,
         name: `${student.user?.first_name ?? ''} ${student.user?.first_last_name ?? ''}`,
+        profile_picture: student.user?.profile_picture || null,
       },
       current: {
         level: currentLevelRecord.level.name,
