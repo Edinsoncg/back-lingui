@@ -1,4 +1,6 @@
 import SupportMaterial from '#models/support_material'
+import { createSupportMaterialValidator } from '#validators/support_material'
+import { updateSupportMaterialValidator } from '#validators/support_material'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class SupportMaterialsController {
@@ -36,7 +38,7 @@ export default class SupportMaterialsController {
   }
 
   async create({ request, response }: HttpContext) {
-    const data = request.only(['name', 'level_id', 'description', 'link'])
+    const data = await request.validateUsing(createSupportMaterialValidator)
     const material = await SupportMaterial.create(data)
     return response.created(material)
   }
@@ -47,7 +49,7 @@ export default class SupportMaterialsController {
       return response.notFound({ message: 'Material not found' })
     }
 
-    const data = request.only(['name', 'level_id', 'description', 'link'])
+    const data = request.validateUsing(updateSupportMaterialValidator)
     material.merge(data)
     await material.save()
 
