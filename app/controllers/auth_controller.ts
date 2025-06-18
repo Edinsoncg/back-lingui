@@ -14,6 +14,7 @@ export default class AuthController {
         id: user.id,
         name: user.first_name,
         email: user.email,
+        profile_picture: user.profile_picture ?? null,
         roles: user.roles.map((role) => role.name),
       },
       token: token,
