@@ -1,11 +1,13 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
-import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 import StudentContract from '#models/student_contract'
 import StudentAttendance from '#models/student_attendance'
 import Status from '#models/status'
 import StudentLanguage from '#models/student_language'
+import StudentLevel from '#models/student_level'
+import Language from './language.js'
 
 export default class Student extends BaseModel {
   @column({ isPrimary: true })
@@ -44,6 +46,16 @@ export default class Student extends BaseModel {
     foreignKey: 'student_id',
   })
   declare studentLanguages: HasMany<typeof StudentLanguage>
+
+  @hasMany(() => StudentLevel, {
+    foreignKey: 'student_id',
+  })
+  declare studentLevels: HasMany<typeof StudentLevel>
+
+  @manyToMany(() => Language, {
+    pivotTable: 'student_languages',
+  })
+  declare languages: ManyToMany<typeof Language>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

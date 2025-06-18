@@ -11,6 +11,7 @@ export const StudentContractFactory = factory
       contract_id: faker.number.int({ min: 1, max: 2 }),
       start_date: faker.date.past({ months: 4 }),
       end_date: faker.date.future({ years: 1 }),
+      is_current: true,
     }
   })
   .build()
