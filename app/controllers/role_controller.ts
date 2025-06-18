@@ -1,6 +1,5 @@
 // app/controllers/roles_controller.ts
 import Role from '#models/role'
-import { createRoleValidator, updateRoleValidator } from '#validators/role'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class RolesController {
