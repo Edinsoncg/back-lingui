@@ -71,6 +71,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
   })
   declare workday: BelongsTo<typeof Workday>
 
+  @column({
+    consume: (value) => Boolean(value),
+    serialize: (value: number) => Boolean(value),
+  })
+  declare is_active: boolean
+
   @hasOne(() => TeacherUserLanguage, {
     foreignKey: 'user_id',
   })

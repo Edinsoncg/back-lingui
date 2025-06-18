@@ -29,6 +29,7 @@ export default class extends BaseSchema {
         .references('id')
         .inTable('workdays')
         .onDelete('CASCADE')
+      table.boolean('is_active').defaultTo(true)
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
     })
