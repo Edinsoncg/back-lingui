@@ -33,6 +33,8 @@ import StudentAttendanceController from '#controllers/student_attendances_contro
 import StudentExtendedController from '#controllers/student_extended_controller'
 import InactiveUsersController from '#controllers/inactive_users_controller'
 import RolePermissionItem from '#controllers/role_permission_items_controller'
+import ItemsController from '#controllers/items_controller'
+import MenuController from '#controllers/menu_controller'
 
 //RUTAS AGENDA
 router
@@ -351,3 +353,17 @@ router
       guards: ['api'],
     })
   )
+
+// Rutas de items
+router.get('/items', [ItemsController, 'list']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
+)
+
+// Ruta Menu- permisos
+router.get('/menu', [MenuController, 'index']).use(
+  middleware.auth({
+    guards: ['api'],
+  })
+)

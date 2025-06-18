@@ -29,6 +29,8 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
+
+      table.unique(['role_id', 'permission_id', 'item_id'])
     })
   }
 

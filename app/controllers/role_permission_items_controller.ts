@@ -1,7 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import RolePermissionItem from '#models/role_permission_item'
 import PermissionItem from '#models/permission_item'
-import { assignPermissionsValidator, removePermissionsValidator } from '#validators/role_permission_item'
+import { assignPermissionsValidator, removePermissionsValidator, updatePermissionsValidator } from '#validators/role_permission_item'
 
 export default class RolePermissionItemsController {
   public async list({ params, response }: HttpContext) {
@@ -19,6 +19,9 @@ export default class RolePermissionItemsController {
 
       const records = await query
 
+      // Obtener todos los permission_items que coincidan
+      const allPermissionItems = await PermissionItem.query()
+
       const result: Record<
         string,
         {
@@ -26,7 +29,7 @@ export default class RolePermissionItemsController {
           role_name: string
           item_id: number
           item_name: string
-          permission_ids: number[]
+          permission_item_ids: number[]
         }
       > = {}
 
@@ -39,11 +42,20 @@ export default class RolePermissionItemsController {
             role_name: record.role.name,
             item_id: record.item_id,
             item_name: record.item.name,
-            permission_ids: [],
+            permission_item_ids: [],
           }
         }
 
-        result[key].permission_ids.push(record.permission_id)
+        // Buscar el permission_item correspondiente
+        const permissionItem = allPermissionItems.find(
+          (p) =>
+            p.permission_id === record.permission_id &&
+            p.item_id === record.item_id
+        )
+
+        if (permissionItem) {
+          result[key].permission_item_ids.push(permissionItem.id)
+        }
       }
 
       return response.ok(Object.values(result))
@@ -59,37 +71,31 @@ export default class RolePermissionItemsController {
    * ✅ Asigna uno o varios permisos (permission_items) a un rol sobre un ítem
    */
   public async assign({ request, response }: HttpContext) {
-    const { role_id, item_id, permission_ids } = await request.validateUsing(assignPermissionsValidator)
+    const { role_id, item_id, permission_item_ids } = await request.validateUsing(assignPermissionsValidator)
 
     try {
-      // 1. Verificar que los permission_ids existan y obtener sus permission_id reales
-      const permissionRows = await PermissionItem
-        .query()
-        .whereIn('id', permission_ids)
-
-      // Validación adicional opcional
-      if (permissionRows.length !== permission_ids.length) {
-        return response.badRequest({ message: 'Algunos permission_ids no son válidos.' })
-      }
-
-      // 2. Construir los registros a insertar
-      const inserts = permissionRows.map((row) => ({
-        role_id,
-        item_id,
-        permission_id: row.permission_id,
-      }))
-
-      // 3. Eliminar asignaciones anteriores para ese rol + item
+      // 1. Eliminar permisos anteriores del mismo ítem para ese rol
       await RolePermissionItem
         .query()
         .where('role_id', role_id)
         .where('item_id', item_id)
         .delete()
 
-      // 4. Insertar nuevos permisos
-      if (inserts.length > 0) {
-        await RolePermissionItem.createMany(inserts)
-      }
+      // 2. Filtrar los permission_items válidos que pertenezcan a ese item
+      const validPermissionItems = await PermissionItem
+        .query()
+        .whereIn('id', permission_item_ids)
+        .where('item_id', item_id)
+
+      // 3. Preparar inserts con los permission_id reales
+      const inserts = validPermissionItems.map((item) => ({
+        role_id,
+        item_id,
+        permission_id: item.permission_id,
+      }))
+
+      // 4. Insertar nuevos registros
+      await RolePermissionItem.createMany(inserts)
 
       return response.ok({ message: 'Permisos asignados correctamente.' })
     } catch (error) {
@@ -102,23 +108,22 @@ export default class RolePermissionItemsController {
    * ❌ Elimina uno o varios permisos específicos de un rol sobre un ítem
    */
   public async remove({ request, response }: HttpContext) {
-    const { role_id, item_id, permission_ids } = await request.validateUsing(removePermissionsValidator)
+    const { role_id, item_id, permission_item_ids } =
+      await request.validateUsing(removePermissionsValidator)
 
     try {
-      // Obtener los permission_id asociados a esos permission_ids
-      const permissionIds = await PermissionItem
+      const permissionItems = await PermissionItem
         .query()
-        .whereIn('id', permission_ids)
+        .whereIn('id', permission_item_ids)
         .where('item_id', item_id)
-        .select('permission_id')
 
-      const idsToDelete = permissionIds.map((p) => p.permission_id)
+      const permissionIds = permissionItems.map((pi) => pi.permission_id)
 
       await RolePermissionItem
         .query()
         .where('role_id', role_id)
         .where('item_id', item_id)
-        .whereIn('permission_id', idsToDelete)
+        .whereIn('permission_id', permissionIds)
         .delete()
 
       return response.ok({ message: 'Permisos eliminados correctamente.' })
@@ -136,22 +141,29 @@ export default class RolePermissionItemsController {
     const itemId = Number(request.param('item_id'))
 
     try {
-      const permisos = await RolePermissionItem
+      // 1. Obtener los permission_id ya asignados al rol + item
+      const asignados = await RolePermissionItem
         .query()
         .where('role_id', roleId)
         .where('item_id', itemId)
-        .preload('permission')
-        .preload('item')
 
-      const permissionItems = await PermissionItem
+      const assignedPermissionIds = asignados.map(p => p.permission_id)
+
+      // 2. Obtener todos los PermissionItem disponibles para ese ítem
+      const allPermissions = await PermissionItem
         .query()
-        .whereIn('permission_id', permisos.map(p => p.permission_id))
         .where('item_id', itemId)
+        .preload('permission')
 
+      // 3. Filtrar los asignados desde la lista completa
+      const assignedPermissions = allPermissions.filter(p =>
+        assignedPermissionIds.includes(p.permission_id)
+      )
+
+      // 4. Respuesta estructurada
       return response.ok({
-        role_id: roleId,
-        item_id: itemId,
-        permission_ids: permissionItems.map(p => p.id),
+        allPermissions,
+        assignedPermissions,
       })
     } catch (error) {
       console.error('Error al obtener permisos:', error)
@@ -163,19 +175,18 @@ export default class RolePermissionItemsController {
    * ✏️ Actualizar permisos (igual que asignar, pero semánticamente diferente)
    */
   public async update({ request, response }: HttpContext) {
-    const { role_id, item_id, permission_ids } = await request.validateUsing(assignPermissionsValidator)
+    const { role_id, item_id, permission_item_ids } = await request.validateUsing(updatePermissionsValidator)
 
     try {
-      const permissionRows = await PermissionItem
+      const validPermissionItems = await PermissionItem
         .query()
-        .whereIn('id', permission_ids)
+        .whereIn('id', permission_item_ids)
+        .where('item_id', item_id)
 
-      const inserts = permissionRows.map((row) => ({
+      const inserts = validPermissionItems.map((item) => ({
         role_id,
         item_id,
-        permission_id: row.permission_id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        permission_id: item.permission_id,
       }))
 
       await RolePermissionItem
