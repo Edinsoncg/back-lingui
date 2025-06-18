@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import Application from '@adonisjs/core/services/app'
+import { profileValidator } from '#validators/profile'
 
 export default class ProfileController {
   public async list({ auth, request, response }: HttpContext) {
@@ -25,19 +26,12 @@ export default class ProfileController {
       await auth.check()
       const user = await User.findOrFail(auth.user!.id)
 
-      const data = request.only([
-        'first_name',
-        'middle_name',
-        'first_last_name',
-        'second_last_name',
-        'email',
-        'phone_number',
-      ])
+      const data = await request.validateUsing(profileValidator)
 
       user.merge(data)
 
       const image = request.file('profile_picture', {
-        size: '2mb',
+        size: '5mb',
         extnames: ['jpg', 'jpeg', 'png', 'webp'],
       })
 
