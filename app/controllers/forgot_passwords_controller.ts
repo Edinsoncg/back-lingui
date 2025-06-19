@@ -19,7 +19,7 @@ export default class ForgotPasswordsController {
       { expiresIn: '15m' }
     )
 
-    const resetLink = `http://localhost:5173/newpassword?token=${token}`
+    const resetLink = `http://147.93.114.138:8669/newpassword?token=${token}`
     const html = `
       <p>Hello ${user.first_name},</p>
       <p>We received a request to reset your password.</p>
