@@ -49,7 +49,7 @@ export default class SupportMaterialsController {
       return response.notFound({ message: 'Material not found' })
     }
 
-    const data = request.validateUsing(updateSupportMaterialValidator)
+    const data = await request.validateUsing(updateSupportMaterialValidator)
     material.merge(data)
     await material.save()
 
