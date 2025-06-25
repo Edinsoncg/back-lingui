@@ -345,7 +345,7 @@ router
     router.get('/', [HousesController, 'list'])
     router.get('/:id', [HousesController, 'get'])
     router.post('/', [HousesController, 'create'])
-    router.put('/:id', [HousesController, 'update'])
+    router.patch('/:id', [HousesController, 'update'])
     router.delete('/:id', [HousesController, 'destroy'])
   })
   .prefix('/setting/house')
