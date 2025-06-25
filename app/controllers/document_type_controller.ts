@@ -1,4 +1,4 @@
-// start/controllers/document_type_controller.ts
+// app/controllers/document_type_controller.ts
 import DocumentType from '#models/document_type'
 import type { HttpContext } from '@adonisjs/core/http'
 import { createValidator, updateValidator } from '#validators/document_type'

@@ -339,7 +339,7 @@ router
 
 //Rutas de configuracion
 
-//House
+// House
 router
   .group(() => {
     router.get('/', [HousesController, 'list'])
@@ -355,7 +355,7 @@ router
     })
   )
 
-//Document Type
+// Document Type
 router
   .group(() => {
     router.get('/', [DocumentTypeController, 'list'])
@@ -365,6 +365,22 @@ router
     router.delete('/:id', [DocumentTypeController, 'destroy'])
   })
   .prefix('/setting/document-type')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+// Language
+router
+  .group(() => {
+    router.get('/', [LanguagesController, 'index'])
+    router.get('/:id', [LanguagesController, 'get'])
+    router.post('/', [LanguagesController, 'create'])
+    router.patch('/:id', [LanguagesController, 'update'])
+    router.delete('/:id', [LanguagesController, 'destroy'])
+  })
+  .prefix('/setting/language')
   .use(
     middleware.auth({
       guards: ['api'],
