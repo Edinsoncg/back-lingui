@@ -32,6 +32,7 @@ import ModalitiesController from '#controllers/modalities_controller'
 import StudentAttendanceController from '#controllers/student_attendances_controller'
 import StudentExtendedController from '#controllers/student_extended_controller'
 import InactiveUsersController from '#controllers/inactive_users_controller'
+import HousesController from '#controllers/houses_controller'
 
 //RUTAS AGENDA
 router
@@ -330,6 +331,24 @@ router
     router.delete('/force/:id', [InactiveUsersController, 'destroy'])
   })
   .prefix('/setting/inactive-user')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
+
+//Rutas de configuracion
+
+//House
+router
+  .group(() => {
+    router.get('/', [HousesController, 'list'])
+    router.get('/:id', [HousesController, 'get'])
+    router.post('/', [HousesController, 'create'])
+    router.put('/:id', [HousesController, 'update'])
+    router.delete('/:id', [HousesController, 'destroy'])
+  })
+  .prefix('/setting/house')
   .use(
     middleware.auth({
       guards: ['api'],
