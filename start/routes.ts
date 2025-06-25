@@ -354,3 +354,19 @@ router
       guards: ['api'],
     })
   )
+
+//Document Type
+router
+  .group(() => {
+    router.get('/', [DocumentTypeController, 'list'])
+    router.get('/:id', [DocumentTypeController, 'get'])
+    router.post('/', [DocumentTypeController, 'create'])
+    router.patch('/:id', [DocumentTypeController, 'update'])
+    router.delete('/:id', [DocumentTypeController, 'destroy'])
+  })
+  .prefix('/setting/document-type')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
