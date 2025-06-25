@@ -386,3 +386,19 @@ router
       guards: ['api'],
     })
   )
+
+// Status
+router
+  .group(() => {
+    router.get('/', [StatusesController, 'list'])
+    router.get('/:id', [StatusesController, 'get'])
+    router.post('/', [StatusesController, 'create'])
+    router.patch('/:id', [StatusesController, 'update'])
+    router.delete('/:id', [StatusesController, 'destroy'])
+  })
+  .prefix('/setting/status')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
