@@ -402,3 +402,19 @@ router
       guards: ['api'],
     })
   )
+
+// Classroom
+router
+  .group(() => {
+    router.get('/', [ClassroomsController, 'list'])
+    router.get('/:id', [ClassroomsController, 'get'])
+    router.post('/', [ClassroomsController, 'create'])
+    router.patch('/:id', [ClassroomsController, 'update'])
+    router.delete('/:id', [ClassroomsController, 'destroy'])
+  })
+  .prefix('/setting/classroom')
+  .use(
+    middleware.auth({
+      guards: ['api'],
+    })
+  )
